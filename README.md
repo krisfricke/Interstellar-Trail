@@ -1,6 +1,6 @@
 # INTERSTELLAR TRAIL — a trading game among the nearest stars
 
-**v1.7.1** — a single-file HTML game (formerly *In Space!*). Open `index.html` in any browser. Progress auto-saves to localStorage; the HALL OF THE GRAND TOUR is a shared online leaderboard (Supabase), with a localStorage fallback when offline.
+**v1.8.0** — a single-file HTML game (formerly *In Space!*). Open `index.html` in any browser. Progress auto-saves to localStorage; the HALL OF THE GRAND TOUR is a shared online leaderboard (Supabase), with a localStorage fallback when offline.
 
 Silk-Road-style trading loop transplanted to the 20 nearest star systems. The game opens
 January 1, **2202** (a small wink to TradeWars 2002). Start at Sol with 2,000 cr, a Taurean
@@ -111,6 +111,8 @@ Pirates (pay or run), drive faults (+15–35% trip time), smooth vacuum (early a
 derelict salvage (credits or cargo — taking cargo slows the rest of the run), trader gossip
 (a real, time-limited price spike at a nearby system — now the most common non-pirate event,
 so tips flow often), and customs inspections on arrival if you're carrying relics.
+
+Multiple rumors stay active at once (each until its own deadline), they're highlighted in the log, and a **RUMORS** menu at port lists every live tip with your best-known source, leg-jump vs. transwarp travel times, and one-click course plotting.
 
 ## The set-out screen
 Rotatable 3D starmap (drag to rotate, scroll to zoom, click a highlighted system to depart).

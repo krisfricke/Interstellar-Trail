@@ -67,6 +67,10 @@ tr.mine td{color:var(--grn)}
 #credit a{color:var(--cyan);text-decoration:none}
 #credit a:hover{text-decoration:underline}
 .contra{color:var(--red)}
+button.danger{border-color:var(--red);color:var(--red)}
+button.danger:hover:not(:disabled){background:#3a1414;border-color:var(--red);color:#ffb3b3}
+.log .rumor{color:var(--gold);font-weight:600;border-left:2px solid var(--gold);padding-left:5px;margin:2px 0}
+.rumorcard{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:6px;padding:10px 14px;margin:10px 0;line-height:1.5}
 </style>
 </head>
 <body>
@@ -120,6 +124,7 @@ tr.mine td{color:var(--grn)}
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
       <div class="log" id="log" style="flex:1;min-width:240px"></div>
       <button onclick="showYard()" id="yardbtn">SHIPYARD &rarr;</button>
+      <button onclick="openRumors()" id="rumorsbtn">RUMORS &rarr;</button>
       <button class="primary" onclick="showSetout()">SET OUT &rarr;</button>
     </div>
   </div>
@@ -139,6 +144,15 @@ tr.mine td{color:var(--grn)}
     <button id="navplan-clear" style="display:none" onclick="clearNavPlan()">CLEAR COURSE</button>
   </div>
   <div class="panel" id="offroute"></div>
+  <div style="margin-top:12px"><button onclick="showPort()">&larr; BACK TO PORT</button></div>
+</div>
+
+<!-- ============ RUMORS ============ -->
+<div id="scr-rumors" class="screen">
+  <div class="statusbar" id="statusbar-r"></div>
+  <h2 style="margin-top:12px">TRADER RUMORS</h2>
+  <div class="dim" style="font-size:.9em;line-height:1.5">Word from passing mail packets: systems paying wildly over the odds, until word gets around. &ldquo;Best source you&rsquo;ve found&rdquo; is the cheapest price at a system you&rsquo;ve actually visited &mdash; you don&rsquo;t know prices where you&rsquo;ve never been.</div>
+  <div id="rumorlist" style="margin-top:12px"></div>
   <div style="margin-top:12px"><button onclick="showPort()">&larr; BACK TO PORT</button></div>
 </div>
 
@@ -195,7 +209,7 @@ tr.mine td{color:var(--grn)}
 
 <script>
 'use strict';
-const VERSION='1.7.1';
+const VERSION='1.8.0';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -320,7 +334,7 @@ function peakC(d,days){return 2*d/(days/365.25);} /* peak speed in units of c = 
 /* ================= STATE ================= */
 let S=null;
 const START_DATE=Date.UTC(2202,0,1);
-function newState(){return {cr:200,loc:0,day:0,ship:'hilux',qship:false,heat:1,cargo:{},lots:{},visited:[0],rumor:null,bought:{},paid:{},won:false,navDest:null};}
+function newState(){return {cr:200,loc:0,day:0,ship:'hilux',qship:false,heat:1,cargo:{},lots:{},visited:[0],rumors:[],bought:{},paid:{},won:false,navDest:null};}
 function dateStr(day){const d=new Date(START_DATE+day*86400000);
   return d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'});}
 
@@ -328,12 +342,14 @@ function dateStr(day){const d=new Date(START_DATE+day*86400000);
 function hash3(a,b,c){let h=2166136261;for(const v of[a,b,c]){h^=v;h=Math.imul(h,16777619);}
   h^=h>>>13;h=Math.imul(h,2246822507);h^=h>>>16;return (h>>>0)/4294967295;}
 function week(){return Math.floor(S.day/7);}
+function rumorAt(sys,gi){if(!S.rumors)return null;for(var i=0;i<S.rumors.length;i++){var r=S.rumors[i];if(r.sys===sys&&r.good===gi&&S.day<=r.expires)return r;}return null;}
+function activeRumors(){return (S.rumors||[]).filter(function(r){return S.day<=r.expires;});}
 function price(sys,gi){
   const g=GOODS[gi];
   const dmin=Math.min.apply(null,g.src.map(function(s){return lyDist(sys,s);}));
   let p=g.base*(0.5+0.13*dmin);
   p*=0.85+0.3*hash3(sys*37+gi,week(),911); /* weekly market wobble */
-  if(S.rumor&&S.rumor.sys===sys&&S.rumor.good===gi&&S.day<=S.rumor.expires)p*=S.rumor.mult;
+  var _rr=rumorAt(sys,gi);if(_rr)p*=_rr.mult;
   return Math.max(1,Math.round(p));
 }
 function stock(sys,gi){
@@ -490,9 +506,9 @@ function show(id){document.querySelectorAll('.screen').forEach(function(s){s.cla
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 function fmt(n){return Math.round(n).toLocaleString('en-US');}
 let LOGBUF=[];
-function log(msg){LOGBUF.unshift({d:S.day,m:msg});if(LOGBUF.length>40)LOGBUF.pop();renderLog();}
+function log(msg,cls){LOGBUF.unshift({d:S.day,m:msg,c:cls||''});if(LOGBUF.length>40)LOGBUF.pop();renderLog();}
 function renderLog(){$('log').innerHTML=LOGBUF.map(function(e,i){
-  return '<div class="'+(i===0?'new':'')+'">['+dateStr(e.d)+'] '+e.m+'</div>';}).join('');}
+  return '<div class="'+(i===0?'new ':'')+(e.c||'')+'">['+dateStr(e.d)+'] '+e.m+'</div>';}).join('');}
 
 function statusHTML(){
   const m=shipMass(),nw=netWorth(),sh=ship();
@@ -512,6 +528,8 @@ function showPort(){
   $('landbtn').innerHTML=LANDINGS[S.loc]
     ?'<button onclick="land()" style="margin-top:10px">&#9660; '+(LANDINGS[S.loc].dock?'DOCK AT ':'LAND ON ')+esc(LANDINGS[S.loc].p.toUpperCase())+'</button>':'';
   $('yardbtn').innerHTML=(S.loc===0?'SOL SHIPYARDS':'USED SHIP LOT')+' &rarr;';
+  if(S.rumors)S.rumors=S.rumors.filter(function(r){return S.day<=r.expires;});
+  var _nr=activeRumors().length;$('rumorsbtn').innerHTML='RUMORS'+(_nr?' <span class="gold">('+_nr+')</span>':'')+' &rarr;';
   $('statusbar').innerHTML=statusHTML();
   renderMarket();renderManifest();renderLog();
   show('scr-port');
@@ -547,7 +565,7 @@ function renderMarket(){
       :'<td class="r '+(p<avg*0.9?'grn':(p>avg*1.1?'cyan':'dim'))+'">'+fmt(avg)+'</td>'; /* green = price below your basis (buy), blue = above (sell) */
     const src=g.src.indexOf(S.loc)>=0;
     const topHere=STARS[S.loc].links.length>0&&STARS[S.loc].links.every(function(jj){return p>=price(jj,i);});
-    h+='<tr'+(have?' class="mine"':'')+'><td>'+esc(g.n)+(g.contraband?' <span class="contra">&#9888; contraband</span>':'')+(src?' <span class="cyan">&#9733; local</span>':'')+(topHere?' <span class="gold">&#9650; highest price around</span>':'')+(S.rumor&&S.rumor.sys===S.loc&&S.rumor.good===i&&S.day<=S.rumor.expires?' <span class="grn">&#9670; anomalous demand until '+dateStr(S.rumor.expires)+'</span>':'')+(g.perish?' <span class="dim">perishable &gt;'+g.perish.grace+'d</span>':'')+(g.halflife?' <span class="dim">half-life '+g.halflife+'d</span>':'')+'</td>'+
+    h+='<tr'+(have?' class="mine"':'')+'><td>'+esc(g.n)+(g.contraband?' <span class="contra">&#9888; contraband</span>':'')+(src?' <span class="cyan">&#9733; local</span>':'')+(topHere?' <span class="gold">&#9650; highest price around</span>':'')+(rumorAt(S.loc,i)?' <span class="grn">&#9670; anomalous demand until '+dateStr(rumorAt(S.loc,i).expires)+'</span>':'')+(g.perish?' <span class="dim">perishable &gt;'+g.perish.grace+'d</span>':'')+(g.halflife?' <span class="dim">half-life '+g.halflife+'d</span>':'')+'</td>'+
       '<td class="r dim">'+g.wt+'</td><td class="r gold">'+fmt(p)+'</td>'+avgCell+'<td class="r dim">'+Math.max(0,stk)+'</td><td class="r">'+(have||'&mdash;')+'</td>'+
       '<td class="c"><span class="qty"><button onclick="buy('+i+',1)" '+(stk<1||S.cr<p?'disabled':'')+'>buy</button>'+
       '<button onclick="buy('+i+',5)" '+(stk<5||S.cr<p*5?'disabled':'')+'>+5</button>'+
@@ -598,7 +616,7 @@ function showSetout(){
     '<div style="margin-top:8px"><select id="offsel">'+others.map(function(j){
       const o=offRouteOdds(j),d=lyDist(S.loc,j),t=travelDays(d,shipMass(),ship().thr);
       return '<option value="'+j+'" style="color:'+(S.visited.indexOf(j)>=0?'var(--grn)':'var(--red)')+'">'+ esc(STARS[j].n)+' \u2014 '+d.toFixed(1)+' ly, '+t.toFixed(1)+'d \u2014 skips '+o.hubs+' hub'+(o.hubs>1?'s':'')+' \u2014 '+Math.round(o.surv*100)+'% survival</option>';
-    }).join('')+'</select> <button onclick="departOff()">ENGAGE RECKLESSLY</button></div>';
+    }).join('')+'</select> <button class="danger" onclick="departOff()">ENGAGE RECKLESSLY</button></div>';
   /* populate nav planner dropdown */
   const navSel=$('navdest-sel');
   const prevNavVal=navSel.value;
@@ -1090,11 +1108,12 @@ function fireEvent(kind){
     /* stay open long enough to actually FETCH the good: this trip + a laden round trip to its source + 3 weeks */
     const fetch=travelDays(Math.min.apply(null,GOODS[gi].src.map(function(s2){return lyDist(sys,s2);})),300,100);
     const until=Math.round(S.day+T.plan.total+21+2*fetch);
-    S.rumor={sys:sys,good:gi,mult:mult,expires:until};
+    S.rumors=(S.rumors||[]).filter(function(r){return S.day<=r.expires&&!(r.sys===sys&&r.good===gi);});
+    S.rumors.push({sys:sys,good:gi,mult:mult,expires:until});
     modal('TRADER GOSSIP',
       'You pass a mail packet in the dark and trade manifests by tightbeam. Word is <span class="gold">'+esc(STARS[sys].n)+
       '</span> is paying wildly over the odds for <span class="gold">'+esc(GOODS[gi].n).toLowerCase()+'</span> \u2014 the word is good until about <span class="gold">'+dateStr(until)+'</span>.',
-      [{t:'Noted',f:function(){log('Rumor: '+STARS[sys].n+' paying high for '+GOODS[gi].n+' until '+dateStr(until)+'.');resumeTransit();}}]);
+      [{t:'Noted',f:function(){log('Rumor: '+STARS[sys].n+' paying high for '+GOODS[gi].n+' until '+dateStr(until)+'.','rumor');resumeTransit();}}]);
   }
 }
 
@@ -1153,6 +1172,60 @@ function clearNavPlan(){
   $('navplan-go').style.display='none';
   $('navplan-clear').style.display='none';
   drawMap();
+}
+/* ================= RUMORS MENU ================= */
+function legDays(to){
+  const path=shortestPath(S.loc,to);if(!path||path.length<2)return null;
+  const m=shipMass(),thr=ship().thr;let t=0;
+  for(let i=0;i<path.length-1;i++)t+=travelDays(lyDist(path[i],path[i+1]),m,thr);
+  return t;
+}
+function bestKnownSource(gi){
+  let best=null;
+  for(const s2 of S.visited){const p=price(s2,gi);if(best===null||p<best.p)best={sys:s2,p:p};}
+  return best;
+}
+function openRumors(){$('statusbar-r').innerHTML=statusHTML();renderRumors();show('scr-rumors');}
+function renderRumors(){
+  const rs=activeRumors().slice().sort(function(a,b){return a.expires-b.expires;});
+  if(!rs.length){$('rumorlist').innerHTML='<p class="dim">No active rumors right now. Trade manifests with mail packets while in transit and word of the next price spike will reach you.</p>';return;}
+  $('rumorlist').innerHTML=rs.map(function(r){
+    const g=GOODS[r.good],sell=STARS[r.sys];
+    const daysleft=Math.max(0,Math.round(r.expires-S.day));
+    const src=bestKnownSource(r.good);
+    const atSell=(r.sys===S.loc);
+    const adj=STARS[S.loc].links.indexOf(r.sys)>=0;
+    let srcLine;
+    if(src){
+      const atSrc=(src.sys===S.loc);
+      srcLine='Best source you’ve found: <span class="cyan">'+esc(STARS[src.sys].n)+'</span> @ <span class="gold">'+fmt(src.p)+'</span> cr'+
+        (atSrc?' <span class="grn">(you’re here)</span>':' <button onclick="rumorPlot('+src.sys+')">PLOT COURSE &rarr;</button>')+
+        (src.sys===r.sys?' <span class="dim">(that’s the sell-port itself — source it elsewhere for the spread)</span>':'');
+    }else{srcLine='<span class="dim">No source discovered yet.</span>';}
+    let destLine;
+    if(atSell){
+      destLine='<span class="grn">You’re at the sell-port now — sell into the spike.</span>';
+    }else{
+      const leg=legDays(r.sys),tw=travelDays(lyDist(S.loc,r.sys),shipMass(),ship().thr),odds=offRouteOdds(r.sys);
+      destLine='To <span class="cyan">'+esc(sell.n)+'</span>: '+
+        (leg!=null?'legs <span class="gold">'+leg.toFixed(1)+'d</span> <button onclick="rumorPlot('+r.sys+')">PLOT LEGS &rarr;</button>':'')+
+        (!adj?' &nbsp;&middot;&nbsp; transwarp <span class="gold">'+tw.toFixed(1)+'d</span> <span class="dim">'+Math.round(odds.surv*100)+'% surv</span> <button class="danger" onclick="rumorTranswarp('+r.sys+')">TRANSWARP &rarr;</button>':'');
+    }
+    return '<div class="rumorcard">'+
+      '<div><span class="gold">&#9670; '+esc(g.n)+'</span> — <span class="cyan">'+esc(sell.n)+'</span> paying <span class="gold">×'+r.mult.toFixed(2)+'</span> <span class="dim">until '+dateStr(r.expires)+' ('+daysleft+'d left)</span></div>'+
+      '<div style="margin-top:6px">'+srcLine+'</div>'+
+      '<div style="margin-top:6px">'+destLine+'</div>'+
+    '</div>';
+  }).join('');
+}
+function rumorPlot(sys){if(sys===S.loc){showSetout();return;}S.navDest=sys;showSetout();}
+function rumorTranswarp(sys){
+  S.navDest=null;showSetout();
+  const sel=$('offsel');
+  if(sel&&Array.prototype.some.call(sel.options,function(o){return parseInt(o.value,10)===sys;})){
+    $('offroute').style.display='';sel.value=String(sys);
+    try{$('offroute').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
+  }else{S.navDest=sys;showSetout();}
 }
 /* ================= WIN / SAVE ================= */
 function win(){
@@ -1228,7 +1301,7 @@ function keepFlying(){showPort();}
 function saveGame(){try{localStorage.setItem('inspace_save',JSON.stringify({v:VERSION,S:S,log:LOGBUF}));}catch(e){}}
 function loadGame(){try{
   const d=JSON.parse(localStorage.getItem('inspace_save'));
-  if(d&&d.S){S=d.S;if(!S.paid)S.paid={};if(!S.ship)S.ship='hilux';if(!S.lots)S.lots={};if(!S.heat)S.heat=1;if(!S.estate0)S.estate0=4750;LOGBUF=d.log||[];showPort();}
+  if(d&&d.S){S=d.S;if(!S.paid)S.paid={};if(!S.ship)S.ship='hilux';if(!S.lots)S.lots={};if(!S.heat)S.heat=1;if(!S.estate0)S.estate0=4750;if(!S.rumors)S.rumors=S.rumor?[S.rumor]:[];LOGBUF=d.log||[];showPort();}
 }catch(e){}}
 function newGame(){
   S=newState();S.estate0=netWorth();LOGBUF=[];
