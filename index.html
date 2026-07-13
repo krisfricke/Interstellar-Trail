@@ -211,7 +211,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.8.1';
+const VERSION='1.8.2';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -713,8 +713,21 @@ function drawMap(){
     ctx.fillText(st.n+(visited&&!isHere?' ✓':''),p.sx+rad+5,p.sy+4);
   }
 
-  /* nav plan legs in blue */
-  if(S.navDest!=null){
+  /* course overlay: TRANSWARP flies straight-line direct (yellow dashed, no hubs);
+     the leg-jump PLOT COURSE plan follows the hub network (blue dashed) */
+  const _twEl=$('offroute'),_twOpen=_twEl&&_twEl.style.display!=='none'&&$('offsel')&&$('offsel').value!=='';
+  if(_twOpen){
+    const _T=parseInt($('offsel').value,10);
+    if(!isNaN(_T)&&_T!==S.loc){
+      const b=proj(STARS[_T].x,STARS[_T].y,STARS[_T].z,W,H);
+      ctx.strokeStyle='rgba(255,215,106,0.9)';ctx.lineWidth=2;ctx.setLineDash([7,5]);
+      ctx.beginPath();ctx.moveTo(hp.sx,hp.sy);ctx.lineTo(b.sx,b.sy);ctx.stroke();
+      ctx.setLineDash([]);ctx.lineWidth=1;
+      const _dd=lyDist(S.loc,_T),_tdd=travelDays(_dd,m,ship().thr);
+      ctx.fillStyle='rgba(255,215,106,0.95)';ctx.font='bold 11px monospace';
+      ctx.fillText('\u26a1 '+_dd.toFixed(1)+' ly \u00b7 '+_tdd.toFixed(1)+'d direct',(hp.sx+b.sx)/2+5,(hp.sy+b.sy)/2-4);
+    }
+  } else if(S.navDest!=null){
     const navPath=shortestPath(S.loc,S.navDest);
     if(navPath&&navPath.length>1){
       ctx.strokeStyle='rgba(80,160,255,0.85)';ctx.lineWidth=2;ctx.setLineDash([6,3]);
@@ -821,6 +834,7 @@ function toggleTranswarp(){
   const el=$('offroute');
   el.style.display=el.style.display==='none'?'':'none';
   if(el.style.display!=='none')twPreselect();
+  drawMap();
 }
 function twPreselect(){
   const off=$('offsel');
@@ -1242,6 +1256,7 @@ function rumorTranswarp(sys){
   if(sel&&Array.prototype.some.call(sel.options,function(o){return parseInt(o.value,10)===sys;})){
     $('offroute').style.display='';sel.value=String(sys);
     try{$('offroute').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
+    drawMap();
   }
 }
 /* ================= WIN / SAVE ================= */
