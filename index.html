@@ -69,6 +69,8 @@ tr.mine td{color:var(--grn)}
 .contra{color:var(--red)}
 button.danger{border-color:var(--red);color:var(--red)}
 button.danger:hover:not(:disabled){background:#3a1414;border-color:var(--red);color:#ffb3b3}
+button.blue{border-color:var(--cyan);color:var(--cyan)}
+button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);color:#bff4ff}
 .log .rumor{color:var(--gold);font-weight:600;border-left:2px solid var(--gold);padding-left:5px;margin:2px 0}
 .rumorcard{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:6px;padding:10px 14px;margin:10px 0;line-height:1.5}
 </style>
@@ -209,7 +211,7 @@ button.danger:hover:not(:disabled){background:#3a1414;border-color:var(--red);co
 
 <script>
 'use strict';
-const VERSION='1.8.0';
+const VERSION='1.8.1';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -245,7 +247,7 @@ const STARS=[
 {id:12,n:'Lacaille 9352',x:8.448,y:-2.033,z:-6.279,d:10.72,sp:'M0.5V',links:[11,13,14],col:'#ffab7a',
  desc:'GJ 887: the quietest red dwarf known, with two confirmed super-Earths. Under calm skies the hydroponic terraces grow a saffron-like spice found nowhere else.'},
 {id:13,n:'Ross 128',x:-10.993,y:0.588,z:0.154,d:11.01,sp:'M4V',links:[5,12,14],col:'#ff9d76',
- desc:'Ross 128 b was the first temperate world found around a quiet red dwarf, and the tea planted there in the 2200s is now the finest in the bubble. Serene, prosperous, smug about it.'},
+ desc:'Ross 128 b was the first temperate world found around a quiet red dwarf, and the saffron terraced there since the 2120s is now the finest in the bubble. Serene, prosperous, smug about it.'},
 {id:14,n:'EZ Aquarii',x:10.192,y:-3.781,z:-2.974,d:11.27,sp:'M5V × 3',links:[12,13,15],col:'#ff8866',
  desc:'A knotted triple of red dwarfs. In the strange triple daylight the weavers spin gossamer fabric in freefall — trinary silk is the luxury cloth of the age.'},
 {id:15,n:'61 Cygni',x:6.473,y:-6.095,z:7.135,d:11.4,sp:'K5V + K7V',links:[10,14,16,17],col:'#ffcf95',
@@ -285,7 +287,7 @@ const GOODS=[
  {id:'degen',  n:'Degenerate-matter ingots',u:'ingot',wt:8, base:500, src:[7]},
  {id:'ore',    n:'Debris-disk ore',       u:'tonne',  wt:5, base:30,  src:[11]},
  {id:'spice',  n:'Lacaille spice',        u:'pouch',  wt:1, base:110, src:[12]},
- {id:'tea',    n:'Ross 128 tea',          u:'chest',  wt:2, base:45,  src:[13]},
+ {id:'saffron',n:'Ross 128 saffron',      u:'pouch',  wt:1, base:120, src:[13]},
  {id:'silk',   n:'Trinary silk',          u:'bolt',   wt:1, base:95,  src:[14]},
  {id:'alloy',  n:'Habitat alloys',        u:'spool',  wt:4, base:75,  src:[15]},
  {id:'pharma', n:'Procyon pharmaceuticals',u:'case',  wt:1, base:130, src:[16]},
@@ -467,7 +469,7 @@ const LANDINGS={
    {t:'FLARE WARNING',b:'Sirens. Proxima is having one of its moods, and every visitor pays a shelter levy toward the storm cellars whether they like it or not. You spend nine hours in a bunker learning a card game you suspect was invented to fleece spacers.',cr:-300},
    {t:'THE RING ROAD',b:'A hauler on the twilight ring lost its driver to a better job. You run one cargo of chilled produce a quarter of the way around the world, sunset on your left the whole drive.',cr:600}]},
  13:{p:'Ross 128 b',adv:[
-   {t:'TEA CEREMONY',b:'You are invited up-terrace. The ceremony takes four hours and no one hurries. At the end the grower wraps four chests \u201cfor the road \u2014 tea should travel.\u201d',good:'tea',q:4},
+   {t:'THE SAFFRON HARVEST',b:'You are invited up-terrace for the dawn picking, when the crocus terraces are worked by hand before the heat — painstaking, unhurried, and, you are assured, the only proper way. You leave with several pouches, “for the road; saffron keeps.”',good:'saffron',q:4},
    {t:'THE QUIET',b:'Ross 128 does not flare. The locals have built an entire aesthetic on that fact. You spend two days in a silence retreat and leave feeling disturbingly refreshed. No refunds, no charges.'},
    {t:'CONSULTATION',b:'The terrace collective quietly pays you to review their export contracts \u2014 an off-worlder\u2019s eye. Your suggestions are received with serene nods and a discreet transfer.',cr:250}]},
  20:{p:'Tau Ceti e',adv:[
@@ -526,7 +528,7 @@ function showPort(){
   $('port-name').innerHTML=esc(st.n)+' <span class="dim" style="font-size:.7em">'+esc(st.sp)+' &middot; '+st.d.toFixed(2)+' ly from Sol</span>';
   $('port-desc').textContent=st.desc;
   $('landbtn').innerHTML=LANDINGS[S.loc]
-    ?'<button onclick="land()" style="margin-top:10px">&#9660; '+(LANDINGS[S.loc].dock?'DOCK AT ':'LAND ON ')+esc(LANDINGS[S.loc].p.toUpperCase())+'</button>':'';
+    ?'<button class="blue" onclick="land()" style="margin-top:10px;font-size:1.05em;padding:9px 18px">&#9660; '+(LANDINGS[S.loc].dock?'DOCK AT ':'LAND ON ')+esc(LANDINGS[S.loc].p.toUpperCase())+'</button>':'';
   $('yardbtn').innerHTML=(S.loc===0?'SOL SHIPYARDS':'USED SHIP LOT')+' &rarr;';
   if(S.rumors)S.rumors=S.rumors.filter(function(r){return S.day<=r.expires;});
   var _nr=activeRumors().length;$('rumorsbtn').innerHTML='RUMORS'+(_nr?' <span class="gold">('+_nr+')</span>':'')+' &rarr;';
@@ -551,11 +553,7 @@ function renderMarket(){
   $('mkt-note').textContent='— this port lists goods produced here or nearby, plus your cargo; prices shift weekly';
   /* carried list: everything produced locally, padded to a minimum of 5 with the
      goods whose source is nearest (= lowest markup over the source price) */
-  const dm=GOODS.map(function(g,i){return {i:i,d:Math.min.apply(null,g.src.map(function(s2){return lyDist(S.loc,s2);}))};});
-  dm.sort(function(a2,b2){return a2.d-b2.d;});
-  const carried={};
-  const nLocal=dm.filter(function(o){return o.d<0.1;}).length;
-  dm.slice(0,Math.max(5,nLocal)).forEach(function(o){carried[o.i]=1;});
+  const carried=carriedGoods(S.loc);
   let h='<tr><th>good</th><th class="r">mass/unit</th><th class="r">price</th><th class="r">avg paid</th><th class="r">stock</th><th class="r">you hold</th><th class="c" colspan="2">trade</th></tr>';
   for(let i=0;i<GOODS.length;i++){
     const g=GOODS[i],p=price(S.loc,i),stk=stock(S.loc,i),have=S.cargo[g.id]||0;
@@ -613,7 +611,7 @@ function showSetout(){
   const others=STARS.map(function(st){return st.id;}).filter(function(j){return j!==S.loc&&STARS[S.loc].links.indexOf(j)<0;});
   $('offroute').innerHTML='<h3>TRANSWARP \u2014 OFF THE CHARTS</h3>'+
     '<div class="dim" style="font-size:.85em;line-height:1.5">No beacons, no lane data \u2014 point the nose anywhere and pray. Risk compounds per hub skipped: 20% each, 10% if you\u2019ve set foot there before'+(ship().special==='argo'?' \u2014 <span class="cyan">halved by the Argo\u2019s survey suite</span>':'')+'. Lose the roll and the ship is debris; you ride the escape pod the rest of the way.</div>'+
-    '<div style="margin-top:8px"><select id="offsel">'+others.map(function(j){
+    '<div style="margin-top:8px"><select id="offsel" onchange="syncNavFromTw()">'+others.map(function(j){
       const o=offRouteOdds(j),d=lyDist(S.loc,j),t=travelDays(d,shipMass(),ship().thr);
       return '<option value="'+j+'" style="color:'+(S.visited.indexOf(j)>=0?'var(--grn)':'var(--red)')+'">'+ esc(STARS[j].n)+' \u2014 '+d.toFixed(1)+' ly, '+t.toFixed(1)+'d \u2014 skips '+o.hubs+' hub'+(o.hubs>1?'s':'')+' \u2014 '+Math.round(o.surv*100)+'% survival</option>';
     }).join('')+'</select> <button class="danger" onclick="departOff()">ENGAGE RECKLESSLY</button></div>';
@@ -822,6 +820,16 @@ function massChanged(){const oldM=T.m,newM=shipMass();T.m=newM;return retune(old
 function toggleTranswarp(){
   const el=$('offroute');
   el.style.display=el.style.display==='none'?'':'none';
+  if(el.style.display!=='none')twPreselect();
+}
+function twPreselect(){
+  const off=$('offsel');
+  if(off&&S.navDest!=null&&Array.prototype.some.call(off.options,function(o){return parseInt(o.value,10)===S.navDest;}))off.value=String(S.navDest);
+}
+function syncNavFromTw(){
+  const off=$('offsel');if(!off)return;const v=parseInt(off.value,10);if(isNaN(v))return;
+  const nav=$('navdest-sel');if(nav)nav.value=String(v);
+  S.navDest=v;selectNavDest();
 }
 function departOff(){
   const dest=parseInt(document.getElementById('offsel').value,10);
@@ -1180,9 +1188,18 @@ function legDays(to){
   for(let i=0;i<path.length-1;i++)t+=travelDays(lyDist(path[i],path[i+1]),m,thr);
   return t;
 }
+function carriedGoods(sys){
+  const dm=GOODS.map(function(g,i){return {i:i,d:Math.min.apply(null,g.src.map(function(s2){return lyDist(sys,s2);}))};});
+  dm.sort(function(a2,b2){return a2.d-b2.d;});
+  const c={};
+  const nLocal=dm.filter(function(o){return o.d<0.1;}).length;
+  dm.slice(0,Math.max(5,nLocal)).forEach(function(o){c[o.i]=1;});
+  return c;
+}
+function soldAt(sys,gi){return !!carriedGoods(sys)[gi]&&stock(sys,gi)>0;}
 function bestKnownSource(gi){
   let best=null;
-  for(const s2 of S.visited){const p=price(s2,gi);if(best===null||p<best.p)best={sys:s2,p:p};}
+  for(const s2 of S.visited){if(!soldAt(s2,gi))continue;const p=price(s2,gi);if(best===null||p<best.p)best={sys:s2,p:p};}
   return best;
 }
 function openRumors(){$('statusbar-r').innerHTML=statusHTML();renderRumors();show('scr-rumors');}
@@ -1201,7 +1218,7 @@ function renderRumors(){
       srcLine='Best source you’ve found: <span class="cyan">'+esc(STARS[src.sys].n)+'</span> @ <span class="gold">'+fmt(src.p)+'</span> cr'+
         (atSrc?' <span class="grn">(you’re here)</span>':' <button onclick="rumorPlot('+src.sys+')">PLOT COURSE &rarr;</button>')+
         (src.sys===r.sys?' <span class="dim">(that’s the sell-port itself — source it elsewhere for the spread)</span>':'');
-    }else{srcLine='<span class="dim">No source discovered yet.</span>';}
+    }else{srcLine='<span class="dim">No place you’ve visited actually sells it yet — go find a source.</span>';}
     let destLine;
     if(atSell){
       destLine='<span class="grn">You’re at the sell-port now — sell into the spike.</span>';
@@ -1220,12 +1237,12 @@ function renderRumors(){
 }
 function rumorPlot(sys){if(sys===S.loc){showSetout();return;}S.navDest=sys;showSetout();}
 function rumorTranswarp(sys){
-  S.navDest=null;showSetout();
+  S.navDest=sys;showSetout();
   const sel=$('offsel');
   if(sel&&Array.prototype.some.call(sel.options,function(o){return parseInt(o.value,10)===sys;})){
     $('offroute').style.display='';sel.value=String(sys);
     try{$('offroute').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
-  }else{S.navDest=sys;showSetout();}
+  }
 }
 /* ================= WIN / SAVE ================= */
 function win(){
