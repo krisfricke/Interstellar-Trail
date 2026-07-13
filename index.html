@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>INTERSTELLAR TRAIL — a trading game among the nearest stars</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#05070d; --panel:#0b1020; --panel2:#101830; --line:#22345c;
+  --txt:#c8d6f0; --dim:#7488b0; --gold:#ffd76a; --cyan:#5ee1ff; --grn:#7dff9b; --red:#ff7d7d;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+  font-family:"Cascadia Mono","Consolas","Courier New",monospace;font-size:15px}
+h1,h2,h3{font-weight:600;letter-spacing:.06em;margin:.3em 0}
+h1{color:var(--gold)} h2{color:var(--cyan);font-size:1.15em} h3{color:var(--gold);font-size:1em}
+button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+  padding:6px 14px;font-family:inherit;font-size:14px;cursor:pointer;border-radius:3px}
+button:hover:not(:disabled){background:#1a2a50;border-color:var(--cyan);color:#fff}
+button:disabled{opacity:.35;cursor:default}
+button.primary{border-color:var(--gold);color:var(--gold)}
+button.primary:hover{background:#33290f;color:#ffe9a8}
+select{background:var(--panel2);color:var(--txt);border:1px solid var(--line);padding:6px;
+  font-family:inherit;font-size:13px;border-radius:3px;max-width:100%}
+.screen{display:none;max-width:1060px;margin:0 auto;padding:18px}
+.screen.active{display:block}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px;margin:10px 0}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.row>.panel{flex:1;min-width:300px}
+table{border-collapse:collapse;width:100%}
+th{color:var(--dim);text-align:left;font-weight:400;border-bottom:1px solid var(--line);padding:3px 8px;font-size:.85em}
+td{padding:3px 8px;border-bottom:1px solid #131d38}
+tr.mine td{color:var(--grn)}
+.r{text-align:right} .c{text-align:center}
+.gold{color:var(--gold)} .cyan{color:var(--cyan)} .grn{color:var(--grn)} .red{color:var(--red)} .dim{color:var(--dim)}
+.statusbar{display:flex;gap:22px;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line);
+  border-radius:6px;padding:8px 16px;font-size:.95em}
+.statusbar b{color:var(--gold);font-weight:600}
+#map3d{display:block;width:100%;height:520px;background:radial-gradient(ellipse at 50% 40%,#0a1226 0%,#04060c 70%);
+  border:1px solid var(--line);border-radius:6px;cursor:grab;touch-action:none}
+#map3d.dragging{cursor:grabbing}
+.desthint{font-size:.85em;color:var(--dim);margin-top:4px}
+.destbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.destbtns button{padding:10px 16px;text-align:left;line-height:1.5}
+.destbtns .tn{color:var(--gold);font-size:1.05em}
+.destbtns .tt{color:var(--dim);font-size:.85em}
+#transit-view{position:relative;height:340px;background:#02040a;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+#transit-canvas{position:absolute;inset:0;width:100%;height:100%}
+#transit-hud{position:absolute;left:0;right:0;bottom:0;padding:10px 16px;background:linear-gradient(transparent,rgba(2,4,10,.92) 40%);font-size:.95em}
+#transit-bar{height:6px;background:#131d38;border-radius:3px;margin:8px 0 4px}
+#transit-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--gold));border-radius:3px}
+.modal-back{position:fixed;inset:0;background:rgba(2,4,10,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.modal-back.active{display:flex}
+.modal{background:var(--panel);border:1px solid var(--gold);border-radius:8px;max-width:520px;width:92%;padding:18px 22px;box-shadow:0 0 40px rgba(255,215,106,.15)}
+.modal .choices{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.qty{display:inline-flex;align-items:center;gap:4px}
+.qty button{padding:1px 8px;font-size:13px}
+.log{max-height:120px;overflow-y:auto;font-size:.85em;color:var(--dim)}
+.log .new{color:var(--txt)}
+.titlebox{text-align:center;padding:60px 20px}
+.titlebox h1{font-size:2.6em;text-shadow:0 0 24px rgba(255,215,106,.5)}
+.titlebox .sub{color:var(--cyan);letter-spacing:.2em}
+.smallnote{font-size:.8em;color:var(--dim)}
+#port-desc{line-height:1.55}
+#verbadge{position:fixed;right:10px;bottom:8px;font-size:11px;color:var(--dim);opacity:.65;z-index:99}
+#credit{text-align:center;padding:26px 0 30px;font-size:12px;color:var(--dim)}
+#credit a{color:var(--cyan);text-decoration:none}
+#credit a:hover{text-decoration:underline}
+.contra{color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- ============ TITLE ============ -->
+<div id="scr-title" class="screen active">
+  <div class="titlebox">
+    <h1>INTERSTELLAR TRAIL</h1>
+    <div class="sub">A TRADING GAME AMONG THE NEAREST STARS</div>
+    <p style="max-width:640px;margin:26px auto;line-height:1.6" class="dim">
+      The year is 2202. The warp-thrust drive has made the impossible trivial: your little
+      freighter thrusts at a constant burn to the midpoint of every run, flips, and decelerates —
+      no time dilation, no lightspeed limit, just honest kinematics at hundreds of c.
+      The twenty nearest star systems have been settled, and every one of them
+      wants something the others have. You have a secondhand Space Hilux, 200 credits, and an infinite cargo hold
+      that gets slower the more you stuff into it.
+      All of it, Sol included, drifts inside the <span class="cyan">Local Fluff</span> — and that is
+      the real, no-really-look-it-up name astronomers gave the warm little interstellar cloud our
+      Solar System happens to be wandering through. Welcome to the Fluff. Try not to spill anything.
+    </p>
+    <p class="gold">The Grand Tour: set foot in every settled system, then return to Sol. Glory is measured in % ROI per week.</p>
+    <div id="titlescores" style="margin-top:18px"></div>
+    <div style="margin-top:26px">
+      <button class="primary" onclick="newGame()">LAUNCH — NEW GAME</button>
+      <button id="btn-continue" onclick="loadGame()" style="display:none">CONTINUE SAVED GAME</button>
+    </div>
+    <p class="smallnote" style="margin-top:34px">Real star positions. Real brachistochrone math: t = 2&radic;(d/a), and thrust is fixed — a laden ship accelerates slower. Sol &rarr; Alpha Centauri, empty: 7 days flat.</p>
+  </div>
+</div>
+
+<!-- ============ PORT ============ -->
+<div id="scr-port" class="screen">
+  <div class="statusbar" id="statusbar"></div>
+  <div class="row">
+    <div class="panel" style="flex:1.3">
+      <h2 id="port-name"></h2>
+      <div id="port-desc" class="dim"></div>
+      <div id="landbtn"></div>
+    </div>
+    <div class="panel">
+      <h3>SHIP MANIFEST</h3>
+      <div id="manifest"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>THE EXCHANGE <span class="dim" id="mkt-note"></span></h3>
+    <table id="market"></table>
+  </div>
+
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div class="log" id="log" style="flex:1;min-width:240px"></div>
+      <button onclick="showYard()" id="yardbtn">SHIPYARD &rarr;</button>
+      <button class="primary" onclick="showSetout()">SET OUT &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SET OUT ============ -->
+<div id="scr-setout" class="screen">
+  <div class="statusbar" id="statusbar2"></div>
+  <h2 style="margin-top:12px">DEPARTURE PLOT — <span id="setout-from" class="gold"></span></h2>
+  <canvas id="map3d"></canvas>
+  <div class="desthint">drag to rotate &middot; scroll to zoom &middot; click a highlighted system (or a button below) to set course &middot; drop-lines mark height above the Sol plane</div>
+  <div class="destbtns" id="destbtns"></div>
+  <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <select id="navdest-sel" onchange="selectNavDest()" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);padding:6px 10px;font-family:inherit;font-size:13px;border-radius:3px"><option value="">— PLOT COURSE TO… —</option></select>
+    <span id="navplan-info"></span>
+    <button id="navplan-go" style="display:none;border-color:var(--cyan);color:var(--cyan)" onclick="confirmNavPlan()">SET FIRST LEG →</button>
+    <button id="navplan-clear" style="display:none" onclick="clearNavPlan()">CLEAR COURSE</button>
+  </div>
+  <div class="panel" id="offroute"></div>
+  <div style="margin-top:12px"><button onclick="showPort()">&larr; BACK TO PORT</button></div>
+</div>
+
+<!-- ============ SHIPYARD ============ -->
+<div id="scr-yard" class="screen">
+  <div class="statusbar" id="statusbar3"></div>
+  <h2 style="margin-top:12px" id="yard-title"></h2>
+  <div class="panel"><table id="shipyard"></table></div>
+  <div style="margin-top:12px"><button onclick="showPort()">&larr; BACK TO PORT</button></div>
+</div>
+
+<!-- ============ TRANSIT ============ -->
+<div id="scr-transit" class="screen">
+  <h2 id="transit-title" style="margin-top:12px"></h2>
+  <div id="transit-view">
+    <canvas id="transit-canvas"></canvas>
+    <div id="transit-hud">
+      <span id="transit-phase" class="cyan"></span>
+      <div id="transit-bar"><div id="transit-fill"></div></div>
+      <span id="transit-stats" class="dim"></span>
+    </div>
+  </div>
+  <div style="margin-top:10px;text-align:center"><button onclick="skipTransit()">SKIP AHEAD &#9193;</button></div>
+</div>
+
+<!-- ============ WIN ============ -->
+<div id="scr-win" class="screen">
+  <div class="titlebox">
+    <h1 class="gold">GRAND TOUR COMPLETE</h1>
+    <div id="win-text" style="max-width:640px;margin:20px auto;line-height:1.7"></div>
+    <div id="hsform" style="margin:14px 0">
+      <input id="hsname" maxlength="24" placeholder="Captain's name" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);padding:7px 10px;font-family:inherit;border-radius:3px">
+      <button class="primary" onclick="recordScore()">RECORD THE VOYAGE</button>
+    </div>
+    <div id="scores" style="margin:14px 0"></div>
+    <div style="margin-top:18px">
+      <button onclick="keepFlying()">KEEP FLYING</button>
+      <button class="primary" onclick="newGame()">NEW GAME</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EVENT MODAL ============ -->
+<div class="modal-back" id="modal-back">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body" style="line-height:1.55"></div>
+    <div class="choices" id="modal-choices"></div>
+  </div>
+</div>
+
+<div id="credit">Based on <a href="https://krisfricke.github.io/Silk-Road/" target="_blank" rel="noopener">the Silk Road</a> by Kris Fricke, an homage to the classic Oregon Trail</div>
+<div id="verbadge"></div>
+
+<script>
+'use strict';
+const VERSION='1.7.1';
+
+/* ================= STAR DATA =================
+   Real J2000 positions of the 20 nearest star systems, in light-years,
+   equatorial XYZ (x toward RA 0h, y toward RA 6h, z toward north celestial pole).
+   links = the route network: from each system you may fly to the next system
+   further from Sol, the next system nearer to Sol, and its own nearest
+   spatial neighbour (deduplicated, symmetric).                         */
+const STARS=[
+{id:0,n:'Sol',x:0,y:0,z:0,d:0,sp:'G2V',links:[1],col:'#fff3b0',
+ desc:'Home. Old Earth still grows the coffee, distills the whiskey, and prints the vaccines the whole bubble runs on. The Kuiper shipyards will sell you anything — at Kuiper prices.'},
+{id:1,n:'Alpha Centauri',x:-1.634,y:-1.366,z:-3.816,d:4.37,sp:'G2V + K1V + M5.5',links:[0,2,3],col:'#ffe9a8',
+ desc:'Triple system and first colony. The computronium foundries orbit Rigil Kentaurus; down on Proxima b they ferment a pale wine from engineered lichen on the twilight ring — Proxima b keeps one face forever to its star.'},
+{id:2,n:"Barnard's Star",x:-0.058,y:-5.94,z:0.488,d:5.96,sp:'M4V',links:[1,3,9],col:'#ff9d76',
+ desc:'A fast-moving red dwarf and a sky full of comets. Barnard b is a frozen super-Earth; the ice miners core ancient cometary volatiles here and sell them by the tonne, cheap.'},
+{id:3,n:'Luhman 16',x:-3.711,y:1.182,z:-5.229,d:6.52,sp:'L7.5 + T0.5 brown dwarfs',links:[1,2,4],col:'#c96f4a',
+ desc:'Twin brown dwarfs, failed stars glowing dull ember-red. Skimmer platforms ride the silicate clouds and compress metallic hydrogen for the drive trade. Rough crews, good bars.'},
+{id:4,n:'WISE 0855-0714',x:-5.102,y:5.32,z:-0.935,d:7.43,sp:'Y2 — coldest known',links:[3,5,7],col:'#8a5a8f',
+ desc:'The coldest known almost-star: water-ice clouds on a thing five times the mass of Jupiter. In the cryo-stills they condense cloud-pearls — perfect spheres of exotic ice that never melt in transit.'},
+{id:5,n:'Wolf 359',x:-7.503,y:2.135,z:0.96,d:7.86,sp:'M6V flare star',links:[4,6,13],col:'#ff8866',
+ desc:'A vicious little flare star. Every superflare fuses the regolith of its inner rock into flare-glass, iridescent and radiation-scarred. The glassblowers’ guild lives underground and does not come up for weather.'},
+{id:6,n:'Lalande 21185',x:-6.521,y:1.647,z:4.881,d:8.31,sp:'M2V',links:[5,7],col:'#ffab7a',
+ desc:'Quiet, orderly red dwarf with two known planets and a well-mapped asteroid population. The platinum-group refineries here set the metals price for the whole bubble.'},
+{id:7,n:'Sirius',x:-1.622,y:8.134,z:-2.491,d:8.66,sp:'A1V + DA white dwarf',links:[4,6,8],col:'#cfe6ff',
+ desc:'The brightest star in Earth’s sky, and its dead companion. Sirius B is a crystallizing white dwarf — a diamond the size of the Earth — and the deep-gravity foundries pull degenerate-matter ingots off its surface: the heaviest cargo in the bubble, and the most valuable.'},
+{id:8,n:'Luyten 726-8',x:7.593,y:3.503,z:-2.709,d:8.79,sp:'M5.5V + M6V (UV Ceti)',links:[7,9,11,20],col:'#ff8866',
+ desc:'UV Ceti and its twin: the flare stars that named the class. A hard-scrabble waystation system — everything here is imported, marked up, and slightly scorched.'},
+{id:9,n:'Ross 154',x:1.915,y:-8.673,z:-3.924,d:9.71,sp:'M3.5V',links:[2,8,10],col:'#ff9d76',
+ desc:'A lonely red dwarf toward Sagittarius, last stop before the long hauls. Fuel depots, bonded warehouses, and a customs office that has seen everything.'},
+{id:10,n:'Ross 248',x:7.357,y:-0.581,z:7.171,d:10.29,sp:'M5.5V',links:[9,11,15,18],col:'#ff8866',
+ desc:'In some thirty-six thousand years this star will pass within about three light-years of Sol \u2014 nearer than Proxima sits today \u2014 and briefly be the closest star of all; the locals have already printed the commemorative plates. Crossroads system — four routes meet here.'},
+{id:11,n:'Epsilon Eridani',x:6.17,y:8.258,z:-1.717,d:10.45,sp:'K2V',links:[8,10,12,21],col:'#ffd9a0',
+ desc:'A young orange sun wrapped in a magnificent debris disk. The belt miners strip-mine planetesimals that never got to be planets. Ore is cheap; everything else is falling toward you.'},
+{id:12,n:'Lacaille 9352',x:8.448,y:-2.033,z:-6.279,d:10.72,sp:'M0.5V',links:[11,13,14],col:'#ffab7a',
+ desc:'GJ 887: the quietest red dwarf known, with two confirmed super-Earths. Under calm skies the hydroponic terraces grow a saffron-like spice found nowhere else.'},
+{id:13,n:'Ross 128',x:-10.993,y:0.588,z:0.154,d:11.01,sp:'M4V',links:[5,12,14],col:'#ff9d76',
+ desc:'Ross 128 b was the first temperate world found around a quiet red dwarf, and the tea planted there in the 2200s is now the finest in the bubble. Serene, prosperous, smug about it.'},
+{id:14,n:'EZ Aquarii',x:10.192,y:-3.781,z:-2.974,d:11.27,sp:'M5V × 3',links:[12,13,15],col:'#ff8866',
+ desc:'A knotted triple of red dwarfs. In the strange triple daylight the weavers spin gossamer fabric in freefall — trinary silk is the luxury cloth of the age.'},
+{id:15,n:'61 Cygni',x:6.473,y:-6.095,z:7.135,d:11.4,sp:'K5V + K7V',links:[10,14,16,17],col:'#ffcf95',
+ desc:'The first star ever to have its distance measured, and proud of it. The great orbital foundries here roll habitat alloy for every station in the bubble. Four routes meet at the yards.'},
+{id:16,n:'Procyon',x:-4.791,y:10.358,z:1.044,d:11.46,sp:'F5IV + DQZ white dwarf',links:[15,17,19],col:'#eef2ff',
+ desc:'A bright subgiant already swelling toward its end, and a white dwarf that got there first. The universities and biolabs of Procyon Station print pharmaceuticals licensed to half the settled worlds.'},
+{id:17,n:'Struve 2398',x:1.081,y:-5.724,z:9.938,d:11.52,sp:'M3V + M3.5V',links:[15,16,18],col:'#ff9d76',
+ desc:'A binary of dim red dwarfs high above the Sol plane. Monasteries, long-baseline observatories, and very little small talk.'},
+{id:18,n:'Groombridge 34',x:8.328,y:0.671,z:8.076,d:11.62,sp:'M1.5V + M3.5V',links:[10,17,19],col:'#ffab7a',
+ desc:'GX Andromedae and companion, with a clutch of small planets. The isotope works here pellet fusion fuel for the entire northern reach. Smells faintly of ozone everywhere.'},
+{id:19,n:'DX Cancri',x:-6.341,y:8.278,z:5.262,d:11.68,sp:'M6.5V',links:[16,18,20],col:'#ff8866',
+ desc:'A nearly invisible ember of a star — and the place where the diggers found the Relics. Nobody knows who left them. Trading them is banned in every port and profitable in most.'},
+{id:20,n:'Tau Ceti',x:10.153,y:4.957,z:-3.226,d:11.75,sp:'G8V',links:[8,19],col:'#ffedb8',
+ desc:'The other yellow sun, with four candidate worlds and the only open-sky farmland outside Sol. The grain barges leave loaded and come back light. End of the line — for now, if you keep to the charts.'},
+{id:21,n:'40 Eridani (Vulcan)',x:7.145,y:14.533,z:-2.176,d:16.34,sp:'K0.5V + DA + M4.5',links:[11,22],col:'#ffd9a0',
+ desc:'A triple system out past the charted bubble: a calm orange sun, a white dwarf, a red dwarf — and in the habitable zone, the hot desert world every human insists on calling Vulcan. The locals are courteously resigned to it. Precision instruments from the academy workshops and the pale, bracing tea of the high deserts are prized in every port of the bubble.'},
+{id:22,n:'Deep Space 9',x:18.59,y:48.428,z:-3.627,d:52.0,sp:'station — Denorios Belt',links:[21],col:'#b9a7e8',
+ desc:'A Cardassian-built station of improbable silhouette, keeping loose position where the charts swear a stable wormhole sleeps. Nobody will state its fix to better than a light-hour, but the heading is known, the distance is fifty-two light-years, and Quark\u2019s never closes.'}
+];
+
+/* ================= GOODS =================
+   wt = mass units per unit of cargo. base = reference price.
+   src = system(s) where it is produced (cheapest there, dearer with distance). */
+const GOODS=[
+ {id:'coffee', n:'Coffee',                u:'crate',  wt:2, base:40,  src:[0]},
+ {id:'whiskey',n:'Single-malt whiskey',   u:'cask',   wt:3, base:95,  src:[0]},
+ {id:'seeds',  n:'Terraforming seed vault',u:'vault', wt:4, base:120, src:[0]},
+ {id:'anti',   n:'Antimatter cells',      u:'cell',   wt:1, base:300, src:[0]},
+ {id:'media',  n:'Vintage Earth media',   u:'archive',wt:1, base:25,  src:[0]},
+ {id:'compu',  n:'Centauri computronium', u:'wafer',  wt:1, base:260, src:[1]},
+ {id:'wine',   n:'Proxima lichen wine',   u:'flask',  wt:2, base:70,  src:[1]},
+ {id:'ice',    n:'Cometary ice cores',    u:'tonne',  wt:5, base:20,  src:[2]},
+ {id:'methyd', n:'Metallic hydrogen',     u:'bottle', wt:4, base:55,  src:[3]},
+ {id:'pearls', n:'Cryo cloud-pearls',     u:'string', wt:1, base:180, src:[4]},
+ {id:'fglass', n:'Flare-glass',           u:'pane',   wt:1, base:65,  src:[5]},
+ {id:'plat',   n:'Asteroid platinum',     u:'ingot',  wt:2, base:150, src:[6]},
+ {id:'degen',  n:'Degenerate-matter ingots',u:'ingot',wt:8, base:500, src:[7]},
+ {id:'ore',    n:'Debris-disk ore',       u:'tonne',  wt:5, base:30,  src:[11]},
+ {id:'spice',  n:'Lacaille spice',        u:'pouch',  wt:1, base:110, src:[12]},
+ {id:'tea',    n:'Ross 128 tea',          u:'chest',  wt:2, base:45,  src:[13]},
+ {id:'silk',   n:'Trinary silk',          u:'bolt',   wt:1, base:95,  src:[14]},
+ {id:'alloy',  n:'Habitat alloys',        u:'spool',  wt:4, base:75,  src:[15]},
+ {id:'pharma', n:'Procyon pharmaceuticals',u:'case',  wt:1, base:130, src:[16]},
+ {id:'iso',    n:'Fusion fuel pellets',   u:'keg',    wt:2, base:85,  src:[18]},
+ {id:'relics', n:'Alien relics',          u:'relic',  wt:1, base:400, src:[19], contraband:true},
+ {id:'grain',  n:'Tau Ceti grain',        u:'tonne',  wt:3, base:15,  src:[20]},
+ {id:'bananas',n:'Bananas',              u:'bunch',  wt:2, base:75,  src:[0],  perish:{grace:60,keep:0.1}},
+ {id:'plasma', n:'Bottled flare-plasma', u:'flask',  wt:1, base:350, src:[8],  halflife:60},
+ {id:'sciinst',n:'Scientific instruments',u:'crate', wt:3, base:340, src:[21]},
+ {id:'vtea',   n:'Vulcan tea',           u:'chest',  wt:2, base:130, src:[21]},
+ {id:'springwine',n:'Bajoran spring wine',u:'bottle',wt:2, base:140, src:[22]},
+ {id:'gamma',  n:'Gamma-quadrant curios',u:'curio',  wt:1, base:450, src:[22]},
+ {id:'battery',n:'Deep-cycle batteries', u:'rack',   wt:10,base:240, src:[18]}
+];
+
+/* ================= PHYSICS =================
+   Brachistochrone: accelerate to midpoint, flip, decelerate.
+   t = 2*sqrt(d/a). Thrust fixed => a proportional to 1/mass. Calibrated:
+   Sol to Alpha Centauri (4.37 ly) at ship mass 100 = 7 days.        */
+const CAL_D=4.37, CAL_T=7;
+/* ================= SHIPS =================
+   a = thrust/total mass; Taurean Mule (100/100) is the calibration reference.
+   Thrusts are derived from the specified crossovers:
+   Dromedary passes the Mule at 400 cargo, Bactrian passes the Dromedary at 800,
+   Conestoga passes the Bactrian at ~1,600; Hilux beats the Mule below ~195,
+   Saucer beats the Hilux below ~105. Orion: twice the Mule's speed, hold capped. */
+const SHIPS=[
+ {id:'pod',      n:'Escape Pod',           mass:10, thr:5,   price:400,  note:'A coffin with a candle on the back. Half a Mule\u2019s power-to-weight, and it only gets worse from there.'},
+ {id:'saucer',   n:'Classic Flying Saucer',mass:20, thr:67,  price:2800, note:'Chrome, ineffable, seats four abductees. The quickest thing flying under ~105 mass of cargo.'},
+ {id:'hilux',    n:'Space Hilux',          mass:50, thr:83,  price:3200, note:'Indestructible light pickup. Outruns a Mule under ~195 mass of cargo.'},
+ {id:'mule',     n:'Taurean Mule',         mass:100,thr:100, price:5000, note:'The reference freighter. Honest, ubiquitous, slow when greedy.'},
+ {id:'argo',     n:'Argo Class Exploration Vessel',            mass:75, thr:75,  price:9000, note:'Survey vessel: 25% less thrust than a Mule, but exploration-grade sensors HALVE off-route danger.', special:'argo'},
+ {id:'drom',     n:'Dromedarian Freighter',       mass:200,thr:120, price:11000,note:'Mid hauler. Faster than a Mule beyond 400 mass of cargo.'},
+ {id:'orion',    n:"T'Khasi Orion",        mass:25, thr:100, price:20000,note:'The legend: a Mule-class drive on a hull pared to 25 mass \u2014 four times the power-to-weight, four times the price. Twice a Mule\u2019s speed empty, but only Mule-grade thrust: the big haulers overhaul it past ~850 cargo, and the racing drive is temperamental.', special:'fragile'},
+ {id:'galliot',  n:'Intergalactic Galliot',         mass:150,thr:140, price:16000,note:'Bristles with point-defense. Pirates sheer off or die trying (\u221290% pirate danger).', special:'galliot'},
+ {id:'bactrian', n:'Bactrian Hauler',      mass:300,thr:132, price:20000,note:'Heavy hauler. Faster than a Dromedary beyond 800 mass of cargo.'},
+ {id:'conestoga',n:'Conestoga Supermax',   mass:400,thr:139, price:32000,note:'A warehouse with engines. Fastest of all beyond ~1,600 mass of cargo.'}
+];
+function ship(){return SHIPS.find(function(x){return x.id===S.ship;});}
+function cargoMass(){let m=0;for(const g of GOODS)m+=(S.cargo[g.id]||0)*g.wt;return m;}
+function lyDist(a,b){const A=STARS[a],B=STARS[b];return Math.hypot(A.x-B.x,A.y-B.y,A.z-B.z);}
+function shipMass(){return ship().mass+cargoMass()+(S.qship?100:0);}
+function travelDays(d,mass,thr){return CAL_T*Math.sqrt(d/CAL_D)*Math.sqrt(mass/(thr||100));}
+function peakC(d,days){return 2*d/(days/365.25);} /* peak speed in units of c = 2 x avg */
+
+/* ================= STATE ================= */
+let S=null;
+const START_DATE=Date.UTC(2202,0,1);
+function newState(){return {cr:200,loc:0,day:0,ship:'hilux',qship:false,heat:1,cargo:{},lots:{},visited:[0],rumor:null,bought:{},paid:{},won:false,navDest:null};}
+function dateStr(day){const d=new Date(START_DATE+day*86400000);
+  return d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'});}
+
+/* deterministic per-(system,good,week) price jitter */
+function hash3(a,b,c){let h=2166136261;for(const v of[a,b,c]){h^=v;h=Math.imul(h,16777619);}
+  h^=h>>>13;h=Math.imul(h,2246822507);h^=h>>>16;return (h>>>0)/4294967295;}
+function week(){return Math.floor(S.day/7);}
+function price(sys,gi){
+  const g=GOODS[gi];
+  const dmin=Math.min.apply(null,g.src.map(function(s){return lyDist(sys,s);}));
+  let p=g.base*(0.5+0.13*dmin);
+  p*=0.85+0.3*hash3(sys*37+gi,week(),911); /* weekly market wobble */
+  if(S.rumor&&S.rumor.sys===sys&&S.rumor.good===gi&&S.day<=S.rumor.expires)p*=S.rumor.mult;
+  return Math.max(1,Math.round(p));
+}
+function stock(sys,gi){
+  const g=GOODS[gi];
+  const dmin=Math.min.apply(null,g.src.map(function(s){return lyDist(sys,s);}));
+  const q=Math.round((4+40*Math.exp(-dmin/5))*(0.6+0.8*hash3(sys*53+gi,week(),313)));
+  const taken=S.bought[sys+'_'+gi+'_'+week()]||0;
+  return Math.max(dmin<0.1?8:0,q)-taken;
+}
+function netWorth(){let w=S.cr+tradeInValue();for(let i=0;i<GOODS.length;i++)w+=(S.cargo[GOODS[i].id]||0)*price(S.loc,i);return w;}
+
+/* ---- off-route navigation: danger compounds per hub skipped ---- */
+function hopCount(a,b){
+  const q=[a],dist={};dist[a]=0;
+  while(q.length){const c=q.shift();
+    for(const j of STARS[c].links)if(dist[j]===undefined){dist[j]=dist[c]+1;if(j===b)return dist[j];q.push(j);}}
+  return 99;
+}
+function offRouteOdds(dest){
+  const hubs=Math.max(1,hopCount(S.loc,dest)-1);
+  let per=S.visited.indexOf(dest)>=0?0.10:0.20;
+  if(ship().special==='argo')per/=2;
+  return {hubs:hubs,surv:Math.pow(1-per,hubs)};
+}
+
+/* ---- perishables: dated cargo lots, decayed as the clock advances ---- */
+function decaySpan(g,a0,a1){ /* surviving fraction across an age interval */
+  if(g.halflife)return Math.pow(0.5,(a1-a0)/g.halflife);
+  if(g.perish){const t0=Math.max(0,a0-g.perish.grace),t1=Math.max(0,a1-g.perish.grace);
+    return Math.pow(g.perish.keep,(t1-t0)/7);}
+  return 1;
+}
+function decayCargo(prevDay){
+  for(const g of GOODS){
+    if(!g.perish&&!g.halflife)continue;
+    const lots=S.lots[g.id]||[];let tot=0;const before=S.cargo[g.id]||0;
+    for(const L of lots){L.q=Math.floor(L.q*decaySpan(g,prevDay-L.d,S.day-L.d));tot+=L.q;}
+    S.lots[g.id]=lots.filter(function(L){return L.q>0;});
+    if(tot!==before){
+      if(tot)S.cargo[g.id]=tot;else delete S.cargo[g.id];
+      const n=before-tot;
+      if(n>0)log(n+' '+g.u+(n>1?'s':'')+' of '+g.n+' '+(g.halflife?'decayed away':'went bad')+'.');
+    }
+  }
+}
+function consumeLots(g,q){
+  if(!g.perish&&!g.halflife)return;
+  let rem=q;const lots=S.lots[g.id]||[];
+  for(const L of lots){const take=Math.min(L.q,rem);L.q-=take;rem-=take;if(!rem)break;}
+  S.lots[g.id]=lots.filter(function(L){return L.q>0;});
+}
+
+/* ---- shipyards ---- */
+function yardStock(){
+  if(S.loc===0)return SHIPS.map(function(x,i){return i;});
+  const out=[];
+  for(let i=0;i<SHIPS.length;i++)if(hash3(S.loc*13+i,week(),555)<0.32)out.push(i);
+  return out;
+}
+function shipListPrice(i){return Math.round(SHIPS[i].price*(S.loc===0?1:0.85));}
+function tradeInValue(){
+  const idx=SHIPS.findIndex(function(x){return x.id===S.ship;});
+  return Math.round(SHIPS[idx].price*(S.loc===0?0.55:0.75));
+}
+function showYard(){
+  $('statusbar3').innerHTML=statusHTML();
+  renderYard();
+  show('scr-yard');
+}
+function renderYard(){
+  $('yard-title').innerHTML=S.loc===0
+    ?'SOL SHIPYARDS <span class="dim">— every hull in the catalogue at list price; they pay poorly for used</span>'
+    :'USED SHIP LOT <span class="dim">— whatever drifted in this week, at used prices; they pay well for trade-ins</span>';
+  const stock=yardStock().slice().sort(function(a,b){return SHIPS[a].price-SHIPS[b].price;}),ti=tradeInValue(),sh=ship();
+  let h='<tr><th>ship</th><th class="r">hull mass</th><th class="r">thrust</th><th></th><th class="r">price</th><th class="r">net after trade-in</th><th></th></tr>';
+  h+='<tr class="mine"><td>'+esc(sh.n)+' <span class="cyan">(yours)</span></td><td class="r">'+sh.mass+'</td><td class="r">'+sh.thr+'</td><td class="dim" style="font-size:.85em">'+sh.note+'</td><td class="r">&mdash;</td><td class="r gold">trade-in '+fmt(ti)+'</td><td></td></tr>';
+  for(const i of stock){const x=SHIPS[i];if(x.id===S.ship)continue;
+    const pr=shipListPrice(i),net=pr-ti,blocked=x.cap&&cargoMass()>x.cap;
+    h+='<tr><td>'+esc(x.n)+(x.cap?' <span class="dim">(hold cap '+x.cap+')</span>':'')+'</td><td class="r">'+x.mass+'</td><td class="r">'+x.thr+'</td>'+
+      '<td class="dim" style="font-size:.85em">'+x.note+'</td><td class="r gold">'+fmt(pr)+'</td><td class="r">'+(net>=0?fmt(net):'<span class="grn">+'+fmt(-net)+' back</span>')+'</td>'+
+      '<td class="c"><button onclick="buyShip('+i+')" '+(S.cr<net||blocked?'disabled':'')+'>'+(blocked?'hold too small':'buy')+'</button></td></tr>';
+  }
+  const qAvail=S.loc===0||hash3(S.loc*29,week(),888)<0.4;
+  if(S.qship||qAvail){
+    const qp=Math.round(7500*(S.loc===0?1:0.85));
+    h+='<tr><td class="gold">Q-Ship Package</td><td class="r">+100</td><td class="r">&mdash;</td>'+
+      '<td class="dim" style="font-size:.85em">Concealed weapons bay behind fake cargo doors \u2014 100 mass of guns you pretend are grain: 67% to obliterate a pirate attacker outright. Fitted to your current hull \u2014 goes with it if you trade or lose the ship.</td>'+
+      (S.qship
+        ?'<td class="r cyan">fitted</td><td class="r">&mdash;</td><td></td>'
+        :'<td class="r gold">'+fmt(qp)+'</td><td class="r">'+fmt(qp)+'</td><td class="c"><button onclick="buyQship('+qp+')" '+(S.cr<qp?'disabled':'')+'>fit</button></td>');
+    h+='</tr>';
+  }
+  $('shipyard').innerHTML=h;
+}
+function buyShip(i){
+  const x=SHIPS[i],net=shipListPrice(i)-tradeInValue();
+  if(S.cr<net||(x.cap&&cargoMass()>x.cap))return;
+  S.cr-=net;
+  log('Traded the '+ship().n+' for a '+x.n+(net>=0?' ('+fmt(net)+' cr)':' (+'+fmt(-net)+' cr back)')+'.');
+  if(S.qship){S.qship=false;log('The Q-ship package went with the old hull.');}
+  S.ship=x.id;
+  $('statusbar3').innerHTML=statusHTML();renderYard();
+}
+function buyQship(p){
+  if(S.cr<p||S.qship)return;
+  S.cr-=p;S.qship=true;
+  log('Fitted a Q-ship package to the '+ship().n+'.');
+  $('statusbar3').innerHTML=statusHTML();renderYard();
+}
+
+/* ---- planetfall ---- */
+const LANDINGS={
+ 1:{p:'Proxima b',adv:[
+   {t:'THE TWILIGHT MARKET',b:'You walk the ring-city at the terminator, where it is always seven in the evening. A vintner whose family has fermented lichen for four generations presses a case on you \u201cfor luck on the dark roads.\u201d',good:'wine',q:3},
+   {t:'FLARE WARNING',b:'Sirens. Proxima is having one of its moods, and every visitor pays a shelter levy toward the storm cellars whether they like it or not. You spend nine hours in a bunker learning a card game you suspect was invented to fleece spacers.',cr:-300},
+   {t:'THE RING ROAD',b:'A hauler on the twilight ring lost its driver to a better job. You run one cargo of chilled produce a quarter of the way around the world, sunset on your left the whole drive.',cr:600}]},
+ 13:{p:'Ross 128 b',adv:[
+   {t:'TEA CEREMONY',b:'You are invited up-terrace. The ceremony takes four hours and no one hurries. At the end the grower wraps four chests \u201cfor the road \u2014 tea should travel.\u201d',good:'tea',q:4},
+   {t:'THE QUIET',b:'Ross 128 does not flare. The locals have built an entire aesthetic on that fact. You spend two days in a silence retreat and leave feeling disturbingly refreshed. No refunds, no charges.'},
+   {t:'CONSULTATION',b:'The terrace collective quietly pays you to review their export contracts \u2014 an off-worlder\u2019s eye. Your suggestions are received with serene nods and a discreet transfer.',cr:250}]},
+ 20:{p:'Tau Ceti e',adv:[
+   {t:'HARVEST FESTIVAL',b:'You arrive mid-festival under an open yellow sky. There is dancing, a grain-sculpture competition, and a strong local opinion that no ship should leave empty.',good:'grain',q:6},
+   {t:'BAR FIGHT',b:'It was not your fight. It became your fight when the combine foreman mistook you for a futures speculator. The furniture was antique, apparently.',cr:-200},
+   {t:'CROP DUSTING',b:'Two days low and slow over the southern latifundia in a borrowed flitter, seeding cloud. Honest work, honest pay, and the smell of rain on alien wheat.',cr:500,days:2}]},
+ 21:{p:'Vulcan',adv:[
+   {t:'THE LOGIC EXAM',b:'A junior academy invites the off-world trader to be examined \u201cfor calibration purposes.\u201d Your performance is graded, at length, as \u201cadequate.\u201d The honorarium, however, is generous \u2014 they find your intuitive shortcuts fascinating, in the way of a zoo exhibit.',cr:800},
+   {t:'KOLINAHR RETREAT',b:'You are permitted to sit at the edge of a desert retreat for four days. You learn to need less sleep and to stop finishing other people\u2019s sentences. Whether this was worth four days is an emotional judgment you decline to make.',days:4},
+   {t:'THE KAL-TOH MASTER',b:'You lose nine straight games of kal-toh in a public garden, each defeat explained patiently and at length. The tea served during your humiliation is extraordinary; a chest of it accompanies you to orbit, \u201cas the lesson appeared strenuous.\u201d',good:'vtea',q:2}]},
+ 22:{p:'Deep Space 9',dock:true,adv:[
+   {t:'DABO!',b:'The wheel spins, the table roars, and for one incandescent moment the Ferengi behind the bar looks genuinely unwell.',cr:1200},
+   {t:'DABO\u2026',b:'The wheel spins. The Ferengi behind the bar looks radiant. You are gently reminded that the house margin is a law of nature.',cr:-600},
+   {t:'THE PROMENADE',b:'You trade shipping gossip with a Bajoran freighter crew over spring wine. They are overstocked and you have working refrigeration; three bottles find their way aboard.',good:'springwine',q:3},
+   {t:'HOLOSUITE MISADVENTURE',b:'You rent a historical program. The safeties were fine; your dignity was not. A day lost and a bar tab you cannot fully account for.',cr:-150,days:1}]}
+};
+function land(){
+  const L=LANDINGS[S.loc];if(!L)return;
+  let prev=S.day;S.day+=2;decayCargo(prev);
+  const a=L.adv[Math.floor(Math.random()*L.adv.length)];
+  let eff='';
+  if(a.cr){S.cr=Math.max(0,S.cr+a.cr);eff+=(a.cr>0?'+':'\u2212')+fmt(Math.abs(a.cr))+' cr. ';}
+  if(a.days){prev=S.day;S.day+=a.days;decayCargo(prev);eff+=a.days+' extra day'+(a.days>1?'s':'')+' spent. ';}
+  if(a.good){const g=GOODS.find(function(x){return x.id===a.good;});
+    S.cargo[a.good]=(S.cargo[a.good]||0)+a.q;
+    const pd=S.paid[a.good]||(S.paid[a.good]={q:0,c:0});pd.q+=a.q;
+    if(g.perish||g.halflife)(S.lots[a.good]=S.lots[a.good]||[]).push({q:a.q,d:S.day});
+    eff+='Gained '+a.q+' '+g.u+(a.q>1?'s':'')+' of '+g.n+'. ';}
+  modal(a.t,a.b+(eff?'<br><br><span class="gold">'+eff+'(2 days on the surface.)</span>':'<br><br><span class="dim">(2 days on the surface.)</span>'),
+    [{t:'Back to orbit',f:function(){log((L.dock?'Docked at ':'Landed on ')+L.p+': '+a.t+'.');showPort();}}]);
+}
+
+/* ================= UI PLUMBING ================= */
+function $(id){return document.getElementById(id);}
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});$(id).classList.add('active');}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function fmt(n){return Math.round(n).toLocaleString('en-US');}
+let LOGBUF=[];
+function log(msg){LOGBUF.unshift({d:S.day,m:msg});if(LOGBUF.length>40)LOGBUF.pop();renderLog();}
+function renderLog(){$('log').innerHTML=LOGBUF.map(function(e,i){
+  return '<div class="'+(i===0?'new':'')+'">['+dateStr(e.d)+'] '+e.m+'</div>';}).join('');}
+
+function statusHTML(){
+  const m=shipMass(),nw=netWorth(),sh=ship();
+  return '<span>&#128176; <b>'+fmt(S.cr)+'</b> cr</span>'+
+    '<span>&#128640; <b>'+esc(sh.n)+'</b></span>'+
+    '<span>&#128197; '+dateStr(S.day)+' <span class="dim">(day '+Math.round(S.day)+')</span></span>'+
+    '<span>&#9875; mass <b>'+fmt(m)+'</b> <span class="dim">(hull '+sh.mass+' + cargo '+fmt(m-sh.mass)+(sh.cap?' / cap '+sh.cap:'')+')</span></span>'+
+    '<span>&#127942; estate <b>'+fmt(nw)+'</b> <span class="dim">(started '+fmt(S.estate0||1960)+')</span></span>'+
+    '<span class="dim">systems '+S.visited.length+'/'+STARS.length+(S.visited.length===STARS.length&&S.loc!==0?' <span class="grn">\u2014 all visited! return to Sol</span>':'')+'</span>';
+}
+
+/* ================= PORT SCREEN ================= */
+function showPort(){
+  const st=STARS[S.loc];
+  $('port-name').innerHTML=esc(st.n)+' <span class="dim" style="font-size:.7em">'+esc(st.sp)+' &middot; '+st.d.toFixed(2)+' ly from Sol</span>';
+  $('port-desc').textContent=st.desc;
+  $('landbtn').innerHTML=LANDINGS[S.loc]
+    ?'<button onclick="land()" style="margin-top:10px">&#9660; '+(LANDINGS[S.loc].dock?'DOCK AT ':'LAND ON ')+esc(LANDINGS[S.loc].p.toUpperCase())+'</button>':'';
+  $('yardbtn').innerHTML=(S.loc===0?'SOL SHIPYARDS':'USED SHIP LOT')+' &rarr;';
+  $('statusbar').innerHTML=statusHTML();
+  renderMarket();renderManifest();renderLog();
+  show('scr-port');
+  saveGame();
+  if(!S.won&&S.loc===0&&S.visited.length===STARS.length)win();
+}
+function renderManifest(){
+  const sh=ship();
+  let rows='<tr><td class="cyan">'+esc(sh.n)+'</td><td class="r dim">hull mass '+sh.mass+'</td><td class="r dim">thrust '+sh.thr+(S.qship?' &middot; Q-ship fitted':'')+'</td></tr>',any=false;
+  for(const g of GOODS){const q=S.cargo[g.id]||0;if(!q)continue;any=true;
+    let fresh='';
+    if((g.perish||g.halflife)&&S.lots[g.id]&&S.lots[g.id].length){
+      const oldest=Math.round(S.day-Math.min.apply(null,S.lots[g.id].map(function(L){return L.d;})));
+      fresh=' <span class="'+(g.perish&&oldest>g.perish.grace-14?'red':'dim')+'">('+oldest+'d old)</span>';}
+    rows+='<tr><td>'+esc(g.n)+fresh+'</td><td class="r">'+q+' '+esc(g.u)+(q>1?'s':'')+'</td><td class="r dim">'+(q*g.wt)+' mass</td></tr>';}
+  $('manifest').innerHTML='<table>'+rows+(any?'':'<tr><td colspan="3" class="dim">Hold is empty. The ship flies light.</td></tr>')+'</table>';
+}
+function renderMarket(){
+  $('mkt-note').textContent='— this port lists goods produced here or nearby, plus your cargo; prices shift weekly';
+  /* carried list: everything produced locally, padded to a minimum of 5 with the
+     goods whose source is nearest (= lowest markup over the source price) */
+  const dm=GOODS.map(function(g,i){return {i:i,d:Math.min.apply(null,g.src.map(function(s2){return lyDist(S.loc,s2);}))};});
+  dm.sort(function(a2,b2){return a2.d-b2.d;});
+  const carried={};
+  const nLocal=dm.filter(function(o){return o.d<0.1;}).length;
+  dm.slice(0,Math.max(5,nLocal)).forEach(function(o){carried[o.i]=1;});
+  let h='<tr><th>good</th><th class="r">mass/unit</th><th class="r">price</th><th class="r">avg paid</th><th class="r">stock</th><th class="r">you hold</th><th class="c" colspan="2">trade</th></tr>';
+  for(let i=0;i<GOODS.length;i++){
+    const g=GOODS[i],p=price(S.loc,i),stk=stock(S.loc,i),have=S.cargo[g.id]||0;
+    if((!carried[i]||stk<=0)&&!have)continue;
+    const pd=S.paid[g.id],avg=(pd&&pd.q)?pd.c/pd.q:null;
+    const avgCell=avg===null?'<td class="r dim">&mdash;</td>'
+      :'<td class="r '+(p<avg*0.9?'grn':(p>avg*1.1?'cyan':'dim'))+'">'+fmt(avg)+'</td>'; /* green = price below your basis (buy), blue = above (sell) */
+    const src=g.src.indexOf(S.loc)>=0;
+    const topHere=STARS[S.loc].links.length>0&&STARS[S.loc].links.every(function(jj){return p>=price(jj,i);});
+    h+='<tr'+(have?' class="mine"':'')+'><td>'+esc(g.n)+(g.contraband?' <span class="contra">&#9888; contraband</span>':'')+(src?' <span class="cyan">&#9733; local</span>':'')+(topHere?' <span class="gold">&#9650; highest price around</span>':'')+(S.rumor&&S.rumor.sys===S.loc&&S.rumor.good===i&&S.day<=S.rumor.expires?' <span class="grn">&#9670; anomalous demand until '+dateStr(S.rumor.expires)+'</span>':'')+(g.perish?' <span class="dim">perishable &gt;'+g.perish.grace+'d</span>':'')+(g.halflife?' <span class="dim">half-life '+g.halflife+'d</span>':'')+'</td>'+
+      '<td class="r dim">'+g.wt+'</td><td class="r gold">'+fmt(p)+'</td>'+avgCell+'<td class="r dim">'+Math.max(0,stk)+'</td><td class="r">'+(have||'&mdash;')+'</td>'+
+      '<td class="c"><span class="qty"><button onclick="buy('+i+',1)" '+(stk<1||S.cr<p?'disabled':'')+'>buy</button>'+
+      '<button onclick="buy('+i+',5)" '+(stk<5||S.cr<p*5?'disabled':'')+'>+5</button>'+
+      '<button onclick="buy('+i+',999)" '+(stk<1||S.cr<p?'disabled':'')+'>max</button></span></td>'+
+      '<td class="c"><span class="qty"><button onclick="sell('+i+',1)" '+(have<1?'disabled':'')+'>sell</button>'+
+      '<button onclick="sell('+i+',999)" '+(have<1?'disabled':'')+'>all</button></span></td></tr>';
+  }
+  $('market').innerHTML=h;
+}
+function buy(gi,q){
+  const g=GOODS[gi],p=price(S.loc,gi),stk=stock(S.loc,gi);
+  q=Math.min(q,stk,Math.floor(S.cr/p));
+  if(ship().cap)q=Math.min(q,Math.floor((ship().cap-cargoMass())/g.wt));
+  if(q<1)return;
+  S.cr-=q*p;S.cargo[g.id]=(S.cargo[g.id]||0)+q;
+  const pd=S.paid[g.id]||(S.paid[g.id]={q:0,c:0});pd.q+=q;pd.c+=q*p; /* running cost basis; survives selling out */
+  if(g.perish||g.halflife)(S.lots[g.id]=S.lots[g.id]||[]).push({q:q,d:S.day});
+  const k=S.loc+'_'+gi+'_'+week();S.bought[k]=(S.bought[k]||0)+q;
+  log('Bought '+q+' '+g.u+(q>1?'s':'')+' of '+g.n+' @ '+fmt(p)+' cr.');
+  $('statusbar').innerHTML=statusHTML();renderMarket();renderManifest();
+}
+function sell(gi,q){
+  const g=GOODS[gi],p=price(S.loc,gi),have=S.cargo[g.id]||0;
+  q=Math.min(q,have);if(q<1)return;
+  S.cr+=q*p;S.cargo[g.id]=have-q;if(!S.cargo[g.id])delete S.cargo[g.id];
+  consumeLots(g,q);
+  log('Sold '+q+' '+g.u+(q>1?'s':'')+' of '+g.n+' @ '+fmt(p)+' cr.');
+  $('statusbar').innerHTML=statusHTML();renderMarket();renderManifest();
+}
+
+/* ================= SET OUT (3D MAP) ================= */
+let cam={yaw:-0.6,pitch:0.35,zoom:26},drag=null,hotspots=[];
+function showSetout(){
+  $('setout-from').textContent=STARS[S.loc].n;
+  $('statusbar2').innerHTML=statusHTML();
+  const m=shipMass();
+  $('destbtns').innerHTML=STARS[S.loc].links.map(function(j){
+    const d=lyDist(S.loc,j),t=travelDays(d,m,ship().thr);
+    const vis=S.visited.indexOf(j)>=0;
+    const navPath=S.navDest!=null?shortestPath(S.loc,S.navDest):null;
+    const isNavHop=navPath&&navPath.length>1&&navPath[1]===j;
+    return '<button onclick="depart('+j+')"'+(isNavHop?' style="border-color:var(--cyan)"':'')+'><span class="tn"'+(isNavHop?' style="color:var(--cyan)"':'')+'>'+esc(STARS[j].n)+(vis?' \u2713':'')+(isNavHop?' <span style="font-size:.8em">(next leg)</span>':'')+'</span><br>'+
+      '<span class="tt">'+d.toFixed(2)+' ly &middot; '+t.toFixed(1)+' days at mass '+fmt(m)+' &middot; peak '+fmt(peakC(d,t))+'c</span></button>';
+  }).join('')+'<button onclick="toggleTranswarp()"><span class="tn">TRANSWARP\u2026</span><br><span class="tt">off the charted lanes \u2014 anywhere you can name, at your peril</span></button>';
+  const others=STARS.map(function(st){return st.id;}).filter(function(j){return j!==S.loc&&STARS[S.loc].links.indexOf(j)<0;});
+  $('offroute').innerHTML='<h3>TRANSWARP \u2014 OFF THE CHARTS</h3>'+
+    '<div class="dim" style="font-size:.85em;line-height:1.5">No beacons, no lane data \u2014 point the nose anywhere and pray. Risk compounds per hub skipped: 20% each, 10% if you\u2019ve set foot there before'+(ship().special==='argo'?' \u2014 <span class="cyan">halved by the Argo\u2019s survey suite</span>':'')+'. Lose the roll and the ship is debris; you ride the escape pod the rest of the way.</div>'+
+    '<div style="margin-top:8px"><select id="offsel">'+others.map(function(j){
+      const o=offRouteOdds(j),d=lyDist(S.loc,j),t=travelDays(d,shipMass(),ship().thr);
+      return '<option value="'+j+'" style="color:'+(S.visited.indexOf(j)>=0?'var(--grn)':'var(--red)')+'">'+ esc(STARS[j].n)+' \u2014 '+d.toFixed(1)+' ly, '+t.toFixed(1)+'d \u2014 skips '+o.hubs+' hub'+(o.hubs>1?'s':'')+' \u2014 '+Math.round(o.surv*100)+'% survival</option>';
+    }).join('')+'</select> <button onclick="departOff()">ENGAGE RECKLESSLY</button></div>';
+  /* populate nav planner dropdown */
+  const navSel=$('navdest-sel');
+  const prevNavVal=navSel.value;
+  navSel.innerHTML='<option value="">— PLOT COURSE TO… —</option>'+
+    STARS.filter(function(st){return st.id!==S.loc;}).map(function(st){
+      const vis=S.visited.indexOf(st.id)>=0;
+      return '<option value="'+st.id+'" style="color:'+(vis?'var(--grn)':'var(--red)')+'">'+esc(st.n)+(vis?' ✓':'')+'</option>';
+    }).join('');
+  if(S.navDest!=null){
+    navSel.value=S.navDest;
+    selectNavDest();
+  } else {
+    navSel.value='';
+    $('navplan-info').innerHTML='';
+    $('navplan-go').style.display='none';
+    $('navplan-clear').style.display='none';
+  }
+  $('offroute').style.display='none';
+  show('scr-setout');
+  sizeMap();drawMap();
+}
+function proj(x,y,z,W,H){
+  /* rotate: yaw about z(celestial pole)=screen-vertical axis... we rotate yaw about Z, pitch about screen X */
+  const cy=Math.cos(cam.yaw),sy=Math.sin(cam.yaw);
+  let X=x*cy-y*sy, Y=x*sy+y*cy, Z=z;
+  const cp=Math.cos(cam.pitch),sp=Math.sin(cam.pitch);
+  let Y2=Y*cp-Z*sp, Z2=Y*sp+Z*cp;
+  const persp=38/(38+Y2/2+18); /* mild perspective on depth axis */
+  const s=cam.zoom*persp;
+  return {sx:W/2+X*s, sy:H/2-Z2*s, depth:Y2, s:s};
+}
+function sizeMap(){
+  const c=$('map3d'),r=c.getBoundingClientRect();
+  c.width=r.width*devicePixelRatio;c.height=r.height*devicePixelRatio;
+}
+function drawMap(){
+  const c=$('map3d'),ctx=c.getContext('2d'),W=c.width/devicePixelRatio,H=c.height/devicePixelRatio;
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  ctx.clearRect(0,0,W,H);
+  hotspots=[];
+  /* background stars */
+  for(let i=0;i<90;i++){const r1=hash3(i,7,1),r2=hash3(i,7,2);
+    ctx.fillStyle='rgba(160,180,220,'+(0.08+0.2*hash3(i,7,3)).toFixed(2)+')';
+    ctx.fillRect(r1*W,r2*H,1,1);}
+  /* Sol-plane reference grid: rings at 4/8/12 ly in the z=0 plane */
+  ctx.strokeStyle='rgba(60,90,150,.25)';ctx.lineWidth=1;
+  for(const R of[4,8,12]){ctx.beginPath();
+    for(let a=0;a<=64;a++){const th=a/64*2*Math.PI,p=proj(R*Math.cos(th),R*Math.sin(th),0,W,H);
+      if(a===0)ctx.moveTo(p.sx,p.sy);else ctx.lineTo(p.sx,p.sy);}
+    ctx.stroke();}
+  /* all edges faint */
+  ctx.strokeStyle='rgba(90,120,180,.18)';
+  const drawn={};
+  for(const st of STARS)for(const j of st.links){
+    const key=Math.min(st.id,j)+'-'+Math.max(st.id,j);if(drawn[key])continue;drawn[key]=1;
+    const a=proj(st.x,st.y,st.z,W,H),b=proj(STARS[j].x,STARS[j].y,STARS[j].z,W,H);
+    ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.stroke();}
+  /* active routes bright */
+  const here=STARS[S.loc],hp=proj(here.x,here.y,here.z,W,H),m=shipMass();
+  for(const j of here.links){
+    const t=STARS[j],p=proj(t.x,t.y,t.z,W,H);
+    ctx.strokeStyle='rgba(94,225,255,.75)';ctx.lineWidth=1.5;
+    ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(hp.sx,hp.sy);ctx.lineTo(p.sx,p.sy);ctx.stroke();ctx.setLineDash([]);
+    const d=lyDist(S.loc,j),td=travelDays(d,m,ship().thr);
+    ctx.fillStyle='rgba(94,225,255,.9)';ctx.font='11px monospace';
+    ctx.fillText(td.toFixed(1)+'d',(hp.sx+p.sx)/2+4,(hp.sy+p.sy)/2-4);
+    ctx.lineWidth=1;
+  }
+  /* stars: sort by depth so nearer draw on top */
+  const order=STARS.map(function(st){return {st:st,p:proj(st.x,st.y,st.z,W,H)};})
+    .sort(function(a,b){return b.p.depth-a.p.depth;});
+  for(const o of order){
+    const st=o.st,p=o.p;
+    /* drop-line to Sol plane */
+    const base=proj(st.x,st.y,0,W,H);
+    ctx.strokeStyle='rgba(120,140,180,.22)';
+    ctx.beginPath();ctx.moveTo(p.sx,p.sy);ctx.lineTo(base.sx,base.sy);ctx.stroke();
+    ctx.fillStyle='rgba(120,140,180,.35)';ctx.fillRect(base.sx-1.5,base.sy-1.5,3,3);
+    const isHere=st.id===S.loc, isDest=here.links.indexOf(st.id)>=0;
+    const rad=isHere?6:(isDest?4.5:3);
+    /* glow */
+    const grd=ctx.createRadialGradient(p.sx,p.sy,0,p.sx,p.sy,rad*3.2);
+    grd.addColorStop(0,st.col);grd.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.globalAlpha=isHere||isDest?0.5:0.22;ctx.fillStyle=grd;
+    ctx.beginPath();ctx.arc(p.sx,p.sy,rad*3.2,0,7);ctx.fill();ctx.globalAlpha=1;
+    ctx.fillStyle=st.col;ctx.beginPath();ctx.arc(p.sx,p.sy,rad,0,7);ctx.fill();
+    if(isHere){ctx.strokeStyle='#ffd76a';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(p.sx,p.sy,rad+4,0,7);ctx.stroke();ctx.lineWidth=1;}
+    if(isDest){ctx.strokeStyle='rgba(94,225,255,.9)';
+      ctx.beginPath();ctx.arc(p.sx,p.sy,rad+4,0,7);ctx.stroke();
+      hotspots.push({x:p.sx,y:p.sy,r:14,id:st.id});}
+    /* label */
+    ctx.font=(isHere||isDest?'bold ':'')+'11px monospace';
+    ctx.fillStyle=isHere?'#ffd76a':(isDest?'#bfeffb':'rgba(160,175,210,.6)');
+    const visited=S.visited.indexOf(st.id)>=0;
+    ctx.fillText(st.n+(visited&&!isHere?' ✓':''),p.sx+rad+5,p.sy+4);
+  }
+
+  /* nav plan legs in blue */
+  if(S.navDest!=null){
+    const navPath=shortestPath(S.loc,S.navDest);
+    if(navPath&&navPath.length>1){
+      ctx.strokeStyle='rgba(80,160,255,0.85)';ctx.lineWidth=2;ctx.setLineDash([6,3]);
+      for(let i=0;i<navPath.length-1;i++){
+        const a=proj(STARS[navPath[i]].x,STARS[navPath[i]].y,STARS[navPath[i]].z,W,H);
+        const b=proj(STARS[navPath[i+1]].x,STARS[navPath[i+1]].y,STARS[navPath[i+1]].z,W,H);
+        ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.stroke();
+      }
+      ctx.setLineDash([]);ctx.lineWidth=1;
+    }
+  }
+  /* legend */
+  ctx.fillStyle='rgba(116,136,176,.8)';ctx.font='11px monospace';
+  ctx.fillText('rings: 4 / 8 / 12 ly from Sol in the Sol plane',12,H-12);
+}
+function mapClick(mx,my){
+  for(const h of hotspots)if(Math.hypot(mx-h.x,my-h.y)<=h.r){depart(h.id);return;}
+}
+function initMap(){
+  const c=$('map3d');
+  c.addEventListener('pointerdown',function(e){drag={x:e.clientX,y:e.clientY,moved:false};c.classList.add('dragging');c.setPointerCapture(e.pointerId);});
+  c.addEventListener('pointermove',function(e){if(!drag)return;
+    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;
+    cam.yaw+=dx*0.008;cam.pitch=Math.max(-1.5,Math.min(1.5,cam.pitch+dy*0.008));
+    drag.x=e.clientX;drag.y=e.clientY;drawMap();});
+  c.addEventListener('pointerup',function(e){
+    c.classList.remove('dragging');
+    if(drag&&!drag.moved){const r=c.getBoundingClientRect();mapClick(e.clientX-r.left,e.clientY-r.top);}
+    drag=null;});
+  c.addEventListener('wheel',function(e){e.preventDefault();
+    cam.zoom=Math.max(8,Math.min(80,cam.zoom*(e.deltaY<0?1.1:0.9)));drawMap();},{passive:false});
+  window.addEventListener('resize',function(){if($('scr-setout').classList.contains('active')){sizeMap();drawMap();}});
+}
+
+/* ================= TRANSIT ================= */
+let T=null; /* live transit state */
+
+/* ---- flight plans: piecewise constant-thrust segments {t0,t1,s0,v0,acc} ---- */
+function makePlan(d,mass,thr){
+  const Tt=travelDays(d,mass,thr),a=4*d/(Tt*Tt); /* ly/day^2 */
+  return {d:d,a:a,total:Tt,overshoot:0,maxOver:0,ph:[
+    {t0:0,t1:Tt/2,s0:0,v0:0,acc:a},
+    {t0:Tt/2,t1:Tt,s0:d/2,v0:a*Tt/2,acc:-a}]};
+}
+function planState(plan,t){
+  t=Math.max(0,Math.min(t,plan.total));
+  for(const p of plan.ph)if(t<=p.t1+1e-9){
+    const dt=t-p.t0;return {s:p.s0+p.v0*dt+p.acc*dt*dt/2,v:p.v0+p.acc*dt};}
+  return {s:plan.d,v:0};
+}
+function planPhase(plan,t){
+  for(const p of plan.ph)if(t<=p.t1+1e-9)return p;
+  return plan.ph[plan.ph.length-1];
+}
+/* Replan the remainder from time t1 with acceleration a (bang-bang optimal).
+   If we can no longer stop within the remaining distance, we brake to a halt
+   PAST the target and fly a fresh little brachistochrone back. */
+function replan(plan,t1,a){
+  const st=planState(plan,t1);let s=st.s,v=st.v,t=t1;
+  const d=plan.d,hist=[],fut=[];
+  for(const p of plan.ph){
+    if(p.t1<=t1+1e-9)hist.push(p);
+    else if(p.t0<t1-1e-9){hist.push({t0:p.t0,t1:t1,s0:p.s0,v0:p.v0,acc:p.acc});break;}
+    else break;
+  }
+  plan.overshoot=0;
+  let D=d-s,u=D>=0?1:-1,w=v*u; /* w = speed toward target */
+  if(w<0){ /* moving away from target: brake to a stop first */
+    const tb=-w/a;
+    fut.push({t0:t,t1:t+tb,s0:s,v0:v,acc:u*a});
+    s+=v*tb+u*a*tb*tb/2;t+=tb;v=0;w=0;D=d-s;u=D>=0?1:-1;
+  }
+  const absD=Math.abs(D);
+  if(w*w/(2*a)>absD+1e-12){ /* stopping distance exceeds what is left: overshoot */
+    const tb=w/a;
+    fut.push({t0:t,t1:t+tb,s0:s,v0:u*w,acc:-u*a});
+    s+=u*(w*tb-a*tb*tb/2);t+=tb;
+    const over=Math.abs(d-s),back=(d-s)>=0?1:-1,th=Math.sqrt(over/a);
+    fut.push({t0:t,t1:t+th,s0:s,v0:0,acc:back*a});
+    fut.push({t0:t+th,t1:t+2*th,s0:s+back*a*th*th/2,v0:back*a*th,acc:-back*a});
+    t+=2*th;
+    plan.overshoot=over;plan.maxOver=Math.max(plan.maxOver,over);
+  }else{ /* still fine: burn on for tau, then flip and brake */
+    const tau=(-w+Math.sqrt(w*w/2+a*absD))/a,vp=w+a*tau;
+    fut.push({t0:t,t1:t+tau,s0:s,v0:u*w,acc:u*a});
+    fut.push({t0:t+tau,t1:t+tau+vp/a,s0:s+u*(w*tau+a*tau*tau/2),v0:u*vp,acc:-u*a});
+    t+=tau+vp/a;
+  }
+  plan.ph=hist.concat(fut);plan.total=t;plan.a=a;
+  return plan.overshoot;
+}
+function retune(f){ /* thrust-to-mass multiplier changed mid-flight */
+  const tnow=T.prog*T.plan.total,oldTotal=T.plan.total,rate=T.dur/Math.max(oldTotal,1e-9);
+  T.curA*=f;
+  const over=replan(T.plan,tnow,T.curA);
+  T.dur=rate*T.plan.total;
+  T.prog=T.plan.total>0?tnow/T.plan.total:1;
+  for(const e of T.events)e.at=e.at*oldTotal/T.plan.total;
+  return over;
+}
+function massChanged(){const oldM=T.m,newM=shipMass();T.m=newM;return retune(oldM/newM);}
+function toggleTranswarp(){
+  const el=$('offroute');
+  el.style.display=el.style.display==='none'?'':'none';
+}
+function departOff(){
+  const dest=parseInt(document.getElementById('offsel').value,10);
+  depart(dest,offRouteOdds(dest));
+}
+function depart(dest,off){
+  const d=lyDist(S.loc,dest),m=shipMass(),days=travelDays(d,m,ship().thr);
+  const plan=makePlan(d,m,ship().thr);
+  T={from:S.loc,to:dest,d:d,m:m,curA:plan.a,plan:plan,prog:0,t0:performance.now(),
+     dur:days*800, /* 0.8s per travel day, uncapped */events:planEvents(days),paused:false,starseed:Math.random()*1e6|0};
+  T.off=!!off;
+  if(off&&Math.random()>off.surv){
+    T.events.push({at:0.25+Math.random()*0.5,kind:'misjump'});
+    T.events.sort(function(a,b){return a.at-b.at;});
+  }
+  $('transit-title').innerHTML='IN TRANSIT: '+esc(STARS[S.loc].n)+' &rarr; '+esc(STARS[dest].n)+
+    ' <span class="dim" style="font-size:.8em">'+d.toFixed(2)+' ly &middot; ship mass '+fmt(m)+'</span>';
+  show('scr-transit');
+  const c=$('transit-canvas'),r=c.parentNode.getBoundingClientRect();
+  c.width=r.width*devicePixelRatio;c.height=r.height*devicePixelRatio;
+  requestAnimationFrame(transitFrame);
+}
+function planEvents(days){
+  /* longer trips risk more; 0-2 events at random fractions of the trip */
+  const ev=[];
+  if(Math.random()<Math.min(0.8,(days/16)*(1+((S.heat||1)-1)*0.3)))ev.push({at:0.15+Math.random()*0.55,kind:pickEvent()});
+  if(Math.random()<Math.min(0.35,days/40))ev.push({at:0.15+Math.random()*0.65,kind:pickEvent()});
+  if(ship().special==='fragile'&&Math.random()<Math.min(0.35,days/18))ev.push({at:0.15+Math.random()*0.65,kind:'malfunction'}); /* the Orion's thoroughbred drive */
+  ev.sort(function(a,b){return a.at-b.at;});
+  return ev;
+}
+function pickEvent(){
+  /* pirate share scales with your reputation as a soft mark (S.heat, base 1) */
+  const pw=0.30*(S.heat||1),tot=pw+0.70;
+  let r=Math.random()*tot;
+  if(r<pw)return 'pirates';r-=pw;
+  if(r<0.12)return 'malfunction';
+  if(r<0.20)return 'surge';
+  if(r<0.32)return 'derelict';
+  return 'rumor';
+}
+function skipTransit(){
+  /* jump to the next scheduled event (which still fires) or to arrival */
+  if(!T||T.paused)return;
+  const target=T.events.length?T.events[0].at:1;
+  T.t0=performance.now()-target*T.dur;
+}
+function transitFrame(now){
+  if(!T)return;
+  if(T.paused){requestAnimationFrame(transitFrame);return;}
+  const frac=Math.min(1,(now-T.t0)/T.dur);
+  T.prog=frac;
+  drawTransit(frac);
+  /* fire events */
+  if(T.events.length&&frac>=T.events[0].at){
+    const e=T.events.shift();T.paused=true;fireEvent(e.kind);return;
+  }
+  if(frac>=1){arrive();return;}
+  requestAnimationFrame(transitFrame);
+}
+function drawTransit(frac){
+  const c=$('transit-canvas'),ctx=c.getContext('2d');
+  const W=c.width/devicePixelRatio,H=c.height/devicePixelRatio;
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  ctx.fillStyle='#02040a';ctx.fillRect(0,0,W,H);
+  const plan=T.plan,days=plan.total,tday=frac*days;
+  const st=planState(plan,tday),ph=planPhase(plan,tday);
+  const vc=Math.abs(st.v)*365.25; /* ly/day -> c */
+  /* streaking stars: scroll follows integrated position, so they reverse on the return leg */
+  const streak=Math.min(60,2+vc/12),tail=(st.v>=0?-1:1);
+  for(let i=0;i<70;i++){
+    const r1=hash3(i,T.starseed,1),r2=hash3(i,T.starseed,2),sp=0.3+hash3(i,T.starseed,3);
+    const x=(((r1*W+(st.s/T.d)*W*8*sp)%W)+W)%W, y=r2*H;
+    ctx.strokeStyle='rgba(180,200,240,'+(0.15+0.4*sp).toFixed(2)+')';
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+tail*streak*sp,y);ctx.stroke();
+  }
+  const sx=W*0.5,sy=H*0.45;
+  /* destination star slides into view near the end - and past you on an overshoot */
+  const rem=T.d-st.s,span=Math.max((plan.maxOver||0)*1.6,T.d*0.05);
+  if(Math.abs(rem)<span){
+    const mx=sx-(rem/span)*(W*0.44),tgt=STARS[T.to];
+    const g2=ctx.createRadialGradient(mx,sy,0,mx,sy,16);
+    g2.addColorStop(0,tgt.col);g2.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.globalAlpha=.6;ctx.fillStyle=g2;ctx.beginPath();ctx.arc(mx,sy,16,0,7);ctx.fill();ctx.globalAlpha=1;
+    ctx.fillStyle=tgt.col;ctx.beginPath();ctx.arc(mx,sy,5,0,7);ctx.fill();
+    ctx.font='11px monospace';ctx.fillStyle='#bfeffb';
+    ctx.fillText(tgt.n,mx-ctx.measureText(tgt.n).width/2,sy+26);
+  }
+  /* the ship: nose points along the thrust vector (screen-left = toward the target) */
+  ctx.save();ctx.translate(sx,sy);
+  if(ph.acc>0)ctx.scale(-1,1);
+  ctx.fillStyle='#c8d6f0';
+  ctx.beginPath();ctx.moveTo(16,0);ctx.lineTo(-10,-7);ctx.lineTo(-6,0);ctx.lineTo(-10,7);ctx.closePath();ctx.fill();
+  const pl=8+10*Math.random();
+  const g=ctx.createLinearGradient(-10,0,-10-pl*2,0);
+  g.addColorStop(0,'rgba(94,225,255,.9)');g.addColorStop(1,'rgba(94,225,255,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-9,-3);ctx.lineTo(-10-pl*2,0);ctx.lineTo(-9,3);ctx.closePath();ctx.fill();
+  ctx.restore();
+  /* endpoints */
+  ctx.font='11px monospace';ctx.fillStyle='#7488b0';
+  ctx.fillText(STARS[T.to].n+' \u2190',14,H-58);ctx.fillText(STARS[T.from].n,W-14-ctx.measureText(STARS[T.from].n).width,H-58);
+  /* HUD */
+  $('transit-fill').style.width=Math.max(0,Math.min(100,st.s/T.d*100)).toFixed(1)+'%';
+  let phase;
+  if(st.v<-1e-12)phase=ph.acc<0?'RETURN LEG \u2014 burning back toward the target':'RETURN LEG \u2014 braking for arrival';
+  else if(st.s>T.d+1e-9)phase='OVERSHOOT \u2014 past the target, still shedding velocity!';
+  else phase=ph.acc>0?'ACCELERATING \u2014 constant burn':'DECELERATING \u2014 ship flipped, burning retrograde';
+  $('transit-phase').textContent=phase;
+  $('transit-stats').textContent='day '+tday.toFixed(1)+' of '+days.toFixed(1)+' \u2014 velocity '+vc.toFixed(0)+'c'+
+    (st.s>T.d+1e-9?' \u2014 '+(st.s-T.d).toFixed(3)+' ly past the mark':'');
+}
+function arrive(){
+  const days=T.plan.total;
+  const prevDay=S.day;
+  S.day+=days;S.loc=T.to;
+  decayCargo(prevDay);
+  if(S.visited.indexOf(T.to)<0)S.visited.push(T.to);
+  if(S.navDest!=null&&S.loc===S.navDest){S.navDest=null;log('Plotted course complete \u2014 arrived at final destination.');}
+  const arrMsg='Arrived at '+STARS[T.to].n+' after '+days.toFixed(1)+' days.';
+  /* customs check on arrival if carrying contraband */
+  const contra=GOODS.findIndex(function(g){return g.contraband&&(S.cargo[g.id]||0)>0;});
+  T=null;
+  if(contra>=0&&Math.random()<0.35){
+    const g=GOODS[contra],q=S.cargo[g.id],fine=Math.min(S.cr,Math.round(q*g.base*0.4));
+    delete S.cargo[g.id];S.cr-=fine;
+    modal('CUSTOMS INSPECTION',
+      'The '+STARS[S.loc].n+' customs cutter matches your deceleration burn and boards you. They find the '+
+      esc(g.n).toLowerCase()+'. '+q+' '+g.u+(q>1?'s':'')+' confiscated and a fine of '+fmt(fine)+' cr assessed.',
+      [{t:'Pay up',f:function(){log(arrMsg+' Customs took your relics and '+fmt(fine)+' cr.');showPort();}}]);
+    return;
+  }
+  log(arrMsg);
+  showPort();
+}
+
+/* ================= EVENTS ================= */
+function modal(title,body,choices){
+  $('modal-title').textContent=title;
+  $('modal-body').innerHTML=body;
+  $('modal-choices').innerHTML='';
+  for(const ch of choices){
+    const b=document.createElement('button');
+    if(ch.primary)b.className='primary';
+    b.textContent=ch.t;
+    b.onclick=function(){$('modal-back').classList.remove('active');ch.f();};
+    $('modal-choices').appendChild(b);
+  }
+  $('modal-back').classList.add('active');
+}
+function resumeTransit(){T.paused=false;T.t0=performance.now()-T.prog*T.dur;requestAnimationFrame(transitFrame);}
+function destroyShip(reasonHTML){
+  const oldName=ship().n;
+  S.cargo={};S.lots={};S.ship='pod';S.qship=false;S.heat=1;
+  const Tp=travelDays(T.d,10,5),aPod=4*T.d/(Tp*Tp);
+  const over=retune(aPod/T.curA);T.m=10;
+  modal('SHIP DESTROYED',reasonHTML+'. The '+esc(oldName)+' comes apart around you; the pod kicks free carrying your velocity and nothing else. Its little candle-drive says it can still finish the trip'+(over?' \u2014 though with brakes this weak you will overshoot and double back':'')+'. Your cargo scatters behind you as very expensive debris.',
+    [{t:'Drift on',f:function(){log('Ship destroyed \u2014 the '+oldName+' is gone. Escaped in the pod.');resumeTransit();}}]);
+}
+function cargoValueList(){
+  const out=[];for(let i=0;i<GOODS.length;i++){const q=S.cargo[GOODS[i].id]||0;if(q)out.push([i,q]);}return out;
+}
+function fireEvent(kind){
+  if(kind==='misjump'){
+    if(S.ship==='pod'){
+      modal('ROUGH VACUUM','The uncharted deep shrugs at the pod \u2014 too small a fish. It shudders through the ripple and holds.',
+        [{t:'Drift on',f:resumeTransit}]);
+      return;
+    }
+    destroyShip('Uncharted space collects its toll. A shear in the vacuum \u2014 the kind the beacon network exists to flag \u2014 catches the hull mid-burn');
+    return;
+  }
+  if(kind==='pirates'){
+    /* the Q-ship's concealed batteries get first say */
+    if(S.qship&&Math.random()<0.67){
+      S.heat=Math.max(0.3,(S.heat||1)*0.6);
+      modal('PIRATES \u2014 SURPRISE',
+        'The corsair closes on what its scopes call a fat, underpowered trader. Blast shutters drop, the Q-ship package runs out its hidden batteries, and fires exactly once. The expanding cloud astern used to be a pirate. Word of this will get around.',
+        [{t:'Reload and carry on',f:function(){log('Pirate obliterated by the Q-ship batteries.');resumeTransit();}}]);
+      return;
+    }
+    if(ship().special==='galliot'&&Math.random()<0.9){
+      S.heat=Math.max(0.3,(S.heat||1)*0.6);
+      modal('PIRATES \u2014 BRIEFLY',
+        'A corsair begins its intercept run; the Galliot\u2019s point-defense grid paints it with a hundred firing solutions and one polite warning shot. The pirate reconsiders at speed. Word of this will get around.',
+        [{t:'Carry on',f:function(){log('Pirates repelled by the Galliot\u2019s defenses.');resumeTransit();}}]);
+      return;
+    }
+    const ransom=Math.max(50,Math.round(S.cr*0.15));
+    /* escape odds scale with CURRENT accel (cargo, hull, even drive damage) vs a stock Mule */
+    const aMule=4*T.d/Math.pow(travelDays(T.d,100,100),2);
+    function escOdds(a){return Math.max(0.05,Math.min(0.95,0.55*Math.pow(a/aMule,0.75)));}
+    const pEsc=escOdds(T.curA);
+    /* jettisoning half the cargo (ceil per good) lightens the ship; escape uses post-jettison math */
+    const mNow=shipMass();
+    let dumpMass=0;for(const g of GOODS){const hv=S.cargo[g.id]||0;if(hv)dumpMass+=Math.ceil(hv/2)*g.wt;}
+    const pJet=dumpMass>0?escOdds(T.curA*mNow/(mNow-dumpMass)):pEsc;
+    function runOutcome(p){
+      if(Math.random()<p){
+        S.heat=Math.max(1,(S.heat||1)*0.6);
+        log('Outran the pirates. The corsair dwindles astern.');
+        modal('CLEAN GETAWAY','You redline the drive and the corsair falls away astern, cursing on an open channel.',[{t:'Onward',f:resumeTransit}]);
+      }else{
+        if(Math.random()<0.25){destroyShip('They catch you at the flip, and this crew does not rob \u2014 a torpedo blooms against the drive section');return;}
+        const cv=cargoValueList();let lost='nothing of value';
+        if(cv.length){const pick=cv[Math.floor(Math.random()*cv.length)];
+          const g=GOODS[pick[0]],q=Math.max(1,Math.round(pick[1]*0.6));
+          S.cargo[g.id]-=q;if(S.cargo[g.id]<=0)delete S.cargo[g.id];
+          consumeLots(g,q);
+          massChanged(); /* lighter now \u2014 better brakes */
+          lost=q+' '+g.u+(q>1?'s':'')+' of '+g.n;}
+        else{const grab=Math.round(S.cr*0.25);S.cr-=grab;lost=fmt(grab)+' cr';}
+        log('Caught by pirates \u2014 lost '+lost+'.');
+        modal('BOARDED','They catch you at the midpoint flip, when you cannot dodge. They take '+lost+' and leave you your hull. Generous, by pirate standards.',[{t:'Limp onward',f:resumeTransit}]);
+      }
+    }
+    const choices=[
+      {t:'Pay the ransom ('+fmt(ransom)+' cr)',f:function(){
+        S.cr-=ransom;S.heat=Math.min(3,(S.heat||1)*1.35);
+        log('Paid pirates a ransom of '+fmt(ransom)+' cr. Word gets around about soft marks.');resumeTransit();}}
+    ];
+    if(dumpMass>0)choices.push({t:'Jettison half the cargo & run ('+Math.round(pJet*100)+'%)',f:function(){
+      const dumped=[];
+      for(const g of GOODS){const hv=S.cargo[g.id]||0;if(!hv)continue;
+        const dump=Math.ceil(hv/2);
+        S.cargo[g.id]=hv-dump;if(!S.cargo[g.id])delete S.cargo[g.id];
+        consumeLots(g,dump);dumped.push(dump+' '+g.u+(dump>1?'s':'')+' of '+g.n);}
+      massChanged(); /* lighter: better escape AND a faster replanned trip */
+      log('Jettisoned half the cargo: '+dumped.join(', ')+'.');
+      runOutcome(escOdds(T.curA));
+    }});
+    choices.push({t:'Run for it ('+Math.round(pEsc*100)+'%)',primary:true,f:function(){runOutcome(pEsc);}});
+    modal('PIRATES OFF THE BOW',
+      'A blacked-out corsair matches your velocity mid-burn and paints your hull with targeting lasers. '+
+      'Their demand is simple: <span class="gold">'+fmt(ransom)+' cr</span>, wired now, or they hole your cargo bay.'+
+      '<br><span class="dim" style="font-size:.85em">The nav computer rates your escape odds at '+Math.round(pEsc*100)+'% on current thrust-to-mass'+(dumpMass>0?'; '+Math.round(pJet*100)+'% if you dump half the cargo first':'')+'.</span>',
+      choices);
+    }else if(kind==='malfunction'){
+    const pen=0.15+Math.random()*0.2;
+    const over=retune(1-pen);
+    modal('DRIVE FAULT',
+      'A warp-coil governor trips mid-burn. Thrust down <span class="red">'+Math.round(pen*100)+'%</span> while the autofactory prints a replacement.'+
+      (over?' You are decelerating on weakened engines: the nav plot says you will <span class="red">overshoot '+esc(STARS[T.to].n)+' by '+over.toFixed(2)+' ly</span> and double back.':''),
+      [{t:'Nurse it along',f:function(){log('Drive fault — thrust down '+Math.round(pen*100)+'%'+(over?'; overshot and doubled back':'')+'.');resumeTransit();}}]);
+  }else if(kind==='surge'){
+    const gain=0.10+Math.random()*0.12;
+    retune(1+gain);
+    modal('FAVORABLE VACUUM',
+      'The drive finds an unusually smooth stretch of spacetime and the burn runs hot and clean. Thrust up <span class="grn">'+Math.round(gain*100)+'%</span> for the rest of the run.',
+      [{t:'Ride it',f:function(){log('Smooth vacuum — burn ran '+Math.round(gain*100)+'% hot.');resumeTransit();}}]);
+  }else if(kind==='derelict'){
+    if(Math.random()<0.2){ /* usually it's cargo — and cargo means mass, and mass means your course math is suddenly wrong */
+      const cr=200+Math.floor(Math.random()*1000);
+      modal('DERELICT HULK',
+        'A dead freighter tumbles across your course, decades cold. The safe cracks easily: <span class="gold">'+fmt(cr)+' cr</span> in hard scrip.',
+        [{t:'Salvage and go',f:function(){S.cr+=cr;log('Salvaged '+fmt(cr)+' cr from a derelict.');resumeTransit();}},
+         {t:'Leave the dead alone',f:function(){log('Passed a derelict by.');resumeTransit();}}]);
+    }else{
+      const _bIdx=GOODS.findIndex(function(x){return x.id==='battery';});
+      const gi=(Math.random()<0.3&&_bIdx>=0)?_bIdx:Math.floor(Math.random()*GOODS.length),g=GOODS[gi];
+      let q=1+Math.floor(Math.random()*6);
+      if(ship().cap)q=Math.min(q,Math.floor((ship().cap-cargoMass())/g.wt));
+      if(q<1){
+        modal('DERELICT HULK','A dead freighter tumbles across your course, hold full of '+esc(g.n).toLowerCase()+' \u2014 but your own hold is at capacity. You salute the dead and burn on.',
+          [{t:'Onward',f:function(){log('Passed a derelict by \u2014 no room aboard.');resumeTransit();}}]);
+        return;
+      }
+      const tnow=T.prog*T.plan.total,stNow=planState(T.plan,tnow),phNow=planPhase(T.plan,tnow);
+      const risky=stNow.v>1e-12&&phNow.acc<0;
+      modal('DERELICT HULK',
+        'A dead freighter tumbles across your course. Its hold still carries <span class="gold">'+q+' '+g.u+(q>1?'s':'')+' of '+esc(g.n)+'</span>. Taking it aboard adds '+q*g.wt+' mass.'+
+        (risky?' <span class="red">You are mid-deceleration: extra mass now means weaker braking, and the nav computer predicts an overshoot.</span>':''),
+        [{t:'Take the cargo',f:function(){S.cargo[g.id]=(S.cargo[g.id]||0)+q;
+            const pd=S.paid[g.id]||(S.paid[g.id]={q:0,c:0});pd.q+=q; /* free salvage lowers your cost basis */
+            if(g.perish||g.halflife)(S.lots[g.id]=S.lots[g.id]||[]).push({q:q,d:S.day+T.prog*T.plan.total});
+            const over=massChanged();
+            log('Salvaged '+q+' '+g.u+(q>1?'s':'')+' of '+g.n+' from a derelict'+(over?' — the extra mass forced an overshoot of '+over.toFixed(2)+' ly':'')+'.');resumeTransit();}},
+         {t:'Leave it',f:function(){log('Passed a derelict by.');resumeTransit();}}]);
+    }
+  }else{ /* rumor */
+    const dests=STARS[T.to].links.filter(function(j){return j!==T.from;});
+    const sys=dests.length?dests[Math.floor(Math.random()*dests.length)]:T.to;
+    const gi=Math.floor(Math.random()*GOODS.length);
+    const mult=1.6+Math.random()*0.8;
+    /* stay open long enough to actually FETCH the good: this trip + a laden round trip to its source + 3 weeks */
+    const fetch=travelDays(Math.min.apply(null,GOODS[gi].src.map(function(s2){return lyDist(sys,s2);})),300,100);
+    const until=Math.round(S.day+T.plan.total+21+2*fetch);
+    S.rumor={sys:sys,good:gi,mult:mult,expires:until};
+    modal('TRADER GOSSIP',
+      'You pass a mail packet in the dark and trade manifests by tightbeam. Word is <span class="gold">'+esc(STARS[sys].n)+
+      '</span> is paying wildly over the odds for <span class="gold">'+esc(GOODS[gi].n).toLowerCase()+'</span> \u2014 the word is good until about <span class="gold">'+dateStr(until)+'</span>.',
+      [{t:'Noted',f:function(){log('Rumor: '+STARS[sys].n+' paying high for '+GOODS[gi].n+' until '+dateStr(until)+'.');resumeTransit();}}]);
+  }
+}
+
+
+/* ================= NAV PLANNER ================= */
+function shortestPath(from,to){
+  /* fastest route by travel TIME: per-leg t \u221d \u221ad, so minimize \u03a3\u221ad (mass-independent) */
+  if(from===to)return [from];
+  const dist={},prev={},done={};
+  dist[from]=0;
+  for(;;){
+    let c=null;
+    for(const k in dist)if(!done[k]&&(c===null||dist[k]<dist[c]))c=k;
+    if(c===null)return null;
+    if(+c===to)break;
+    done[c]=1;
+    for(const j of STARS[+c].links){
+      const w=dist[+c]+Math.sqrt(lyDist(+c,j));
+      if(dist[j]===undefined||w<dist[j]){dist[j]=w;prev[j]=+c;}
+    }
+  }
+  const path=[to];let cur=to;
+  while(cur!==from){cur=prev[cur];path.unshift(cur);}
+  return path;
+}
+function selectNavDest(){
+  const sel=$('navdest-sel'),val=parseInt(sel.value);
+  $('navplan-info').innerHTML='';
+  $('navplan-go').style.display='none';
+  $('navplan-clear').style.display='none';
+  if(isNaN(val)||val===S.loc){S.navDest=null;drawMap();return;}
+  const path=shortestPath(S.loc,val);
+  if(!path||path.length<2){$('navplan-info').innerHTML='<span class="red">No route found.</span>';return;}
+  S.navDest=val;
+  const m=shipMass(),thr=ship().thr;
+  let tot=0;const legs=[];
+  for(let i=0;i<path.length-1;i++){
+    const t=travelDays(lyDist(path[i],path[i+1]),m,thr);tot+=t;
+    legs.push(esc(STARS[path[i+1]].n)+' <span class="dim">('+t.toFixed(1)+'d)</span>');}
+  $('navplan-info').innerHTML='<span class="dim">via</span> '+legs.join(' <span class="dim">\u2192</span> ')+' <span class="cyan">\u2248 '+tot.toFixed(1)+' days at current mass</span>';
+  $('navplan-go').style.display='';
+  $('navplan-clear').style.display='';
+  drawMap();
+}
+function confirmNavPlan(){
+  if(S.navDest==null)return;
+  const path=shortestPath(S.loc,S.navDest);
+  if(!path||path.length<2)return;
+  const nextHop=path[1];
+  if(STARS[S.loc].links.indexOf(nextHop)>=0)depart(nextHop);
+}
+function clearNavPlan(){
+  S.navDest=null;
+  const sel=$('navdest-sel');if(sel)sel.value='';
+  $('navplan-info').innerHTML='';
+  $('navplan-go').style.display='none';
+  $('navplan-clear').style.display='none';
+  drawMap();
+}
+/* ================= WIN / SAVE ================= */
+function win(){
+  S.won=true;
+  const worth=netWorth(),e0=S.estate0||1960,gain=worth-e0,weeks=Math.max(S.day/7,0.1),roi=(gain/e0/weeks*100);
+  S.lastScore={gain:gain,roi:roi,worth:worth};
+  $('win-text').innerHTML='On <span class="gold">'+dateStr(S.day)+'</span> you return to <span class="gold">Sol</span> with every settled system\u2019s dust on your boots \u2014 all '+STARS.length+' ports in <span class="cyan">'+Math.round(S.day)+' days</span> ('+(S.day/365.25).toFixed(1)+' years), coming home in the '+esc(ship().n)+'.'+
+    '<br><br>Estate on departure: <span class="dim">'+fmt(e0)+' cr</span>'+
+    '<br>Estate on return: <span class="gold">'+fmt(worth)+' cr</span>'+
+    '<br>Gain: <span class="'+(gain>=0?'grn':'red')+'">'+fmt(gain)+' cr</span> over '+weeks.toFixed(1)+' weeks'+
+    '<br><br><span class="cyan" style="font-size:1.3em">'+roi.toFixed(1)+'% ROI / week</span>';
+  saveGame();
+  renderScores();
+  show('scr-win');
+}
+/* ===== shared HALL OF THE GRAND TOUR via Supabase =====
+   Same project as Silk Road; the publishable key is client-safe (RLS allows public
+   read/insert/update only). Interstellar Trail uses its own table, inspace_scores,
+   so its ROI-ranked board never collides with Silk Road's estate board. If Supabase
+   is unreachable (offline, or opened via file://) the game falls back to localStorage. */
+const SB_URL='https://pryjfosvewnlencqbfxl.supabase.co';
+const SB_KEY='sb_publishable_26F-RM1IB-YzZsW3iPnygA_5DF-u7en';
+const SB_ON=!!(SB_URL&&SB_KEY&&typeof fetch==='function');
+function sbHead(x){return Object.assign({apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},x||{});}
+function sbGet(q){return fetch(SB_URL+'/rest/v1/'+q,{headers:sbHead()}).then(function(r){return r.ok?r.json():Promise.reject(r.status);});}
+function sbSend(q,m,b,pref){return fetch(SB_URL+'/rest/v1/'+q,{method:m,headers:sbHead({Prefer:pref||'return=minimal'}),body:JSON.stringify(b)});}
+
+function loadScores(){try{return JSON.parse(localStorage.getItem('inspace_scores'))||[];}catch(e){return [];}}
+function saveScoresLocal(sc){try{localStorage.setItem('inspace_scores',JSON.stringify(sc.slice(0,50)));}catch(e){}}
+function scoreKey(e){return e.runId||('~'+e.n+'|'+e.when+'|'+e.gain);}
+function mergeScores(a,b){
+  const map={};
+  a.concat(b).forEach(function(e){if(!e)return;const k=scoreKey(e);if(!map[k]||(e.roi||0)>(map[k].roi||0))map[k]=e;});
+  return Object.keys(map).map(function(k){return map[k];}).sort(function(x,y){return (y.roi||0)-(x.roi||0);}).slice(0,50);
+}
+/* pull the shared board, fold in any local-only runs, cache, and re-render */
+function syncBoard(){
+  if(!SB_ON)return Promise.resolve();
+  return sbGet('inspace_scores?select=data&order=score.desc&limit=100').then(function(rows){
+    const remote=rows.map(function(r){return r.data;}).filter(Boolean);
+    saveScoresLocal(mergeScores(remote,loadScores()));
+    renderScores();
+    const ts=$('titlescores');
+    if(ts)ts.innerHTML=loadScores().length?'<h3>HALL OF THE GRAND TOUR</h3>'+scoresTable(5):'';
+  }).catch(function(e){/* offline: keep local board */});
+}
+function recordScore(){
+  if(!S.lastScore||S.scoreSaved)return;
+  const name=(($('hsname').value||'').trim()||'Anonymous Spacer').slice(0,24);
+  if(!S.runId)S.runId='it'+Date.now()+Math.floor(Math.random()*1000);
+  const entry={runId:S.runId,n:name,roi:Math.round(S.lastScore.roi*10)/10,gain:Math.round(S.lastScore.gain),days:Math.round(S.day),ship:ship().n,when:dateStr(S.day),version:VERSION,ts:Date.now()};
+  const sc=loadScores();
+  const i=sc.findIndex(function(e){return e.runId&&e.runId===entry.runId;});
+  if(i>=0)sc[i]=entry;else sc.push(entry);
+  sc.sort(function(a,b){return (b.roi||0)-(a.roi||0);});
+  saveScoresLocal(sc);
+  S.scoreSaved=true;saveGame();
+  renderScores();
+  if(SB_ON){try{sbSend('inspace_scores?on_conflict=run_id','POST',{run_id:entry.runId,score:Math.round((entry.roi||0)*10),data:entry},'resolution=merge-duplicates,return=minimal').then(function(r){if(r&&!r.ok){try{r.text().then(function(t){console.warn('[inspace scores] Supabase write rejected',r.status,t);});}catch(_){}return;}syncBoard();}).catch(function(e){console.warn('[inspace scores] Supabase write error',e);});}catch(e){}}
+}
+function scoresTable(limit){
+  const sc=loadScores().slice(0,limit||10);
+  if(!sc.length)return '';
+  let h='<table style="max-width:660px;margin:0 auto"><tr><th>#</th><th>captain</th><th class="r">%ROI/wk</th><th class="r">gain</th><th class="r">days</th><th>ship</th><th>returned</th></tr>';
+  sc.forEach(function(x,i){h+='<tr><td class="dim">'+(i+1)+'</td><td>'+esc(x.n)+'</td><td class="r gold">'+(typeof x.roi==='number'?x.roi.toFixed(1)+'%':'\u2014')+'</td><td class="r">'+fmt(x.gain)+'</td><td class="r dim">'+x.days+'</td><td class="dim">'+esc(x.ship)+'</td><td class="dim">'+esc(x.when||'')+'</td></tr>';});
+  return h+'</table>';
+}
+function renderScores(){
+  $('hsform').style.display=S.scoreSaved?'none':'';
+  $('scores').innerHTML=scoresTable(10);
+}
+function keepFlying(){showPort();}
+function saveGame(){try{localStorage.setItem('inspace_save',JSON.stringify({v:VERSION,S:S,log:LOGBUF}));}catch(e){}}
+function loadGame(){try{
+  const d=JSON.parse(localStorage.getItem('inspace_save'));
+  if(d&&d.S){S=d.S;if(!S.paid)S.paid={};if(!S.ship)S.ship='hilux';if(!S.lots)S.lots={};if(!S.heat)S.heat=1;if(!S.estate0)S.estate0=4750;LOGBUF=d.log||[];showPort();}
+}catch(e){}}
+function newGame(){
+  S=newState();S.estate0=netWorth();LOGBUF=[];
+  log('Undocked from Earth orbit with 2,000 cr and an empty hold. Good luck.');
+  showPort();
+}
+window.addEventListener('load',function(){
+  initMap();
+  $('verbadge').textContent='v'+VERSION;
+  $('titlescores').innerHTML=loadScores().length?'<h3>HALL OF THE GRAND TOUR</h3>'+scoresTable(5):'';
+  try{if(localStorage.getItem('inspace_save'))$('btn-continue').style.display='';}catch(e){}
+  syncBoard(); /* pull the shared Hall of the Grand Tour from Supabase */
+});
+
+</script>
+</body>
+</html>
