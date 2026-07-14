@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.8.3';
+const VERSION='1.9.0';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -248,17 +248,17 @@ const STARS=[
  desc:'In some thirty-six thousand years this star will pass within about three light-years of Sol \u2014 nearer than Proxima sits today \u2014 and briefly be the closest star of all; the locals have already printed the commemorative plates. Crossroads system — four routes meet here.'},
 {id:11,n:'Epsilon Eridani',x:6.17,y:8.258,z:-1.717,d:10.45,sp:'K2V',links:[8,10,12,21],col:'#ffd9a0',
  desc:'A young orange sun wrapped in a magnificent debris disk. The belt miners strip-mine planetesimals that never got to be planets. Ore is cheap; everything else is falling toward you.'},
-{id:12,n:'Lacaille 9352',x:8.448,y:-2.033,z:-6.279,d:10.72,sp:'M0.5V',links:[11,13,14],col:'#ffab7a',
+{id:12,n:'Lacaille 9352',x:8.448,y:-2.033,z:-6.279,d:10.72,sp:'M0.5V',links:[11,13,14,26],col:'#ffab7a',
  desc:'GJ 887: the quietest red dwarf known, with two confirmed super-Earths. Under calm skies the hydroponic terraces grow a saffron-like spice found nowhere else.'},
 {id:13,n:'Ross 128',x:-10.993,y:0.588,z:0.154,d:11.01,sp:'M4V',links:[5,12,14],col:'#ff9d76',
  desc:'Ross 128 b was the first temperate world found around a quiet red dwarf, and the saffron terraced there since the 2120s is now the finest in the bubble. Serene, prosperous, smug about it.'},
-{id:14,n:'EZ Aquarii',x:10.192,y:-3.781,z:-2.974,d:11.27,sp:'M5V × 3',links:[12,13,15],col:'#ff8866',
+{id:14,n:'EZ Aquarii',x:10.192,y:-3.781,z:-2.974,d:11.27,sp:'M5V × 3',links:[12,13,15,26],col:'#ff8866',
  desc:'A knotted triple of red dwarfs. In the strange triple daylight the weavers spin gossamer fabric in freefall — trinary silk is the luxury cloth of the age.'},
-{id:15,n:'61 Cygni',x:6.473,y:-6.095,z:7.135,d:11.4,sp:'K5V + K7V',links:[10,14,16,17],col:'#ffcf95',
+{id:15,n:'61 Cygni',x:6.473,y:-6.095,z:7.135,d:11.4,sp:'K5V + K7V',links:[10,14,16,17,25],col:'#ffcf95',
  desc:'The first star ever to have its distance measured, and proud of it. The great orbital foundries here roll habitat alloy for every station in the bubble. Four routes meet at the yards.'},
 {id:16,n:'Procyon',x:-4.791,y:10.358,z:1.044,d:11.46,sp:'F5IV + DQZ white dwarf',links:[15,17,19],col:'#eef2ff',
  desc:'A bright subgiant already swelling toward its end, and a white dwarf that got there first. The universities and biolabs of Procyon Station print pharmaceuticals licensed to half the settled worlds.'},
-{id:17,n:'Struve 2398',x:1.081,y:-5.724,z:9.938,d:11.52,sp:'M3V + M3.5V',links:[15,16,18],col:'#ff9d76',
+{id:17,n:'Struve 2398',x:1.081,y:-5.724,z:9.938,d:11.52,sp:'M3V + M3.5V',links:[15,16,18,25],col:'#ff9d76',
  desc:'A binary of dim red dwarfs high above the Sol plane. Monasteries, long-baseline observatories, and very little small talk.'},
 {id:18,n:'Groombridge 34',x:8.328,y:0.671,z:8.076,d:11.62,sp:'M1.5V + M3.5V',links:[10,17,19],col:'#ffab7a',
  desc:'GX Andromedae and companion, with a clutch of small planets. The isotope works here pellet fusion fuel for the entire northern reach. Smells faintly of ozone everywhere.'},
@@ -266,10 +266,22 @@ const STARS=[
  desc:'A nearly invisible ember of a star — and the place where the diggers found the Relics. Nobody knows who left them. Trading them is banned in every port and profitable in most.'},
 {id:20,n:'Tau Ceti',x:10.153,y:4.957,z:-3.226,d:11.75,sp:'G8V',links:[8,19],col:'#ffedb8',
  desc:'The other yellow sun, with four candidate worlds and the only open-sky farmland outside Sol. The grain barges leave loaded and come back light. End of the line — for now, if you keep to the charts.'},
-{id:21,n:'40 Eridani (Vulcan)',x:7.145,y:14.533,z:-2.176,d:16.34,sp:'K0.5V + DA + M4.5',links:[11,22],col:'#ffd9a0',
+{id:21,n:'40 Eridani (Vulcan)',x:7.145,y:14.533,z:-2.176,d:16.34,sp:'K0.5V + DA + M4.5',links:[11,22,23],col:'#ffd9a0',
  desc:'A triple system out past the charted bubble: a calm orange sun, a white dwarf, a red dwarf — and in the habitable zone, the hot desert world every human insists on calling Vulcan. The locals are courteously resigned to it. Precision instruments from the academy workshops and the pale, bracing tea of the high deserts are prized in every port of the bubble.'},
-{id:22,n:'Deep Space 9',x:18.59,y:48.428,z:-3.627,d:52.0,sp:'station — Denorios Belt',links:[21],col:'#b9a7e8',
- desc:'A Cardassian-built station of improbable silhouette, keeping loose position where the charts swear a stable wormhole sleeps. Nobody will state its fix to better than a light-hour, but the heading is known, the distance is fifty-two light-years, and Quark\u2019s never closes.'}
+{id:22,n:'Deep Space 9',x:18.59,y:48.428,z:-3.627,d:52.0,sp:'station — Denorios Belt',links:[21,23,24,26],col:'#b9a7e8',
+ desc:'A Cardassian-built station of improbable silhouette, keeping loose position where the charts swear a stable wormhole sleeps. Nobody will state its fix to better than a light-hour, but the heading is known, the distance is fifty-two light-years, and Quark\u2019s never closes.'},
+{id:23,n:'Aldebaran',x:22.46,y:58.44,z:18.56,d:65.3,sp:'K5III giant',links:[22,21,28],col:'#ffb066',
+ desc:'The orange eye of Taurus, a bloated giant sun sixty-five light-years out and the first real stop past Deep Space 9. On its temperate inner moons the distillers age a smoky amber whiskey in charred oak hauled all the way from Earth, and will tell you at length that it leaves Islay in the dust. They may even be right.'},
+{id:24,n:'Rigel',x:165.41,y:822.87,z:-120.98,d:848.0,sp:'B8Ia blue supergiant',links:[28,22],col:'#bcd4ff',
+ desc:'A blue supergiant blazing at the foot of Orion, eight hundred and forty-eight light-years from Sol \u2014 the farthest port on any chart, reached only by threading the whole Orion chain or a very brave transwarp. In the star\u2019s ferocious blue light the orbital forges draw a pale, impossibly strong alloy, and the shipwrights build the T\u2019Khasi Orion. There is always one on the lot here, if you can afford the trip out.'},
+{id:25,n:'Vega',x:3.13,y:-19.27,z:15.68,d:25.04,sp:'A0V',links:[17,15,27],col:'#dbe6ff',
+ desc:'A brilliant blue-white star twenty-five light-years off, ringed by the great dusty debris disk that first taught humanity what a young solar system looks like. The optics guilds grind prisms and lenses in its clean, cold light that no factory in the bubble can match.'},
+{id:26,n:'Fomalhaut',x:21.04,y:-5.87,z:-12.42,d:25.13,sp:'A3V',links:[12,14,22,27],col:'#eaf0ff',
+ desc:'The Lonely Star of the autumn sky, twenty-five light-years south, girdled by a knife-sharp ring of dust and ice. Tumbled in that ring for ten thousand years, the resin of some long-dead world hardens into ring-amber \u2014 warm gold, and faintly glowing.'},
+{id:27,n:'Antares',x:-191.03,y:-457.83,z:-246.6,d:554.0,sp:'M1.5Iab red supergiant',links:[25,26],col:'#ff6a5a',
+ desc:'The red heart of the Scorpion, five hundred and fifty light-years down the southern reach \u2014 a supergiant so vast it would swallow the orbit of Mars whole. Deep in the gravity wells of its cinder-worlds the miners cut heart-garnets, blood-dark and enormous, sold by the coffer to anyone who made the long fall out here.'},
+{id:28,n:'Betelgeuse',x:13.37,y:634.52,z:82.51,d:640.0,sp:'M1-2Ia red supergiant',links:[23,24],col:'#ff7d5a',
+ desc:'The doomed red shoulder of Orion, six hundred and forty light-years out \u2014 a supergiant that could go supernova any millennium now (it dimmed alarmingly in the 2010s, then thought better of it). Skimmers dredge crystallized carbon from the star\u2019s shed outer shells: dredge-diamonds, they call them, and they are worth the nightmare of getting home.'}
 ];
 
 /* ================= GOODS =================
@@ -304,7 +316,13 @@ const GOODS=[
  {id:'vtea',   n:'Vulcan tea',           u:'chest',  wt:2, base:130, src:[21]},
  {id:'springwine',n:'Bajoran spring wine',u:'bottle',wt:2, base:140, src:[22]},
  {id:'gamma',  n:'Gamma-quadrant curios',u:'curio',  wt:1, base:450, src:[22]},
- {id:'battery',n:'Deep-cycle batteries', u:'rack',   wt:10,base:240, src:[18]}
+ {id:'battery',n:'Deep-cycle batteries', u:'rack',   wt:10,base:240, src:[18]},
+ {id:'awhiskey',n:'Aldebaran whiskey',    u:'cask',   wt:3, base:120, src:[23], stockMul:4},
+ {id:'starsteel',n:'Rigel starsteel',     u:'ingot',  wt:7, base:210, src:[24], stockMul:5},
+ {id:'bdiamond',n:'Betelgeuse dredge-diamonds',u:'case',wt:2,base:430, src:[28], stockMul:4},
+ {id:'garnet',  n:'Antares heart-garnets',u:'coffer', wt:3, base:340, src:[27], stockMul:4},
+ {id:'optics',  n:'Vega prism-optics',    u:'crate',  wt:2, base:150, src:[25]},
+ {id:'ramber',  n:'Fomalhaut ring-amber', u:'string', wt:1, base:150, src:[26]}
 ];
 
 /* ================= PHYSICS =================
@@ -353,7 +371,7 @@ function activeRumors(){return (S.rumors||[]).filter(function(r){return S.day<=r
 function price(sys,gi){
   const g=GOODS[gi];
   const dmin=Math.min.apply(null,g.src.map(function(s){return lyDist(sys,s);}));
-  let p=g.base*(0.5+0.13*dmin);
+  let p=g.base*(0.5+0.13*Math.min(dmin,60));
   p*=0.85+0.3*hash3(sys*37+gi,week(),911); /* weekly market wobble */
   var _rr=rumorAt(sys,gi);if(_rr)p*=_rr.mult;
   return Math.max(1,Math.round(p));
@@ -361,7 +379,7 @@ function price(sys,gi){
 function stock(sys,gi){
   const g=GOODS[gi];
   const dmin=Math.min.apply(null,g.src.map(function(s){return lyDist(sys,s);}));
-  const q=Math.round((4+40*Math.exp(-dmin/5))*(0.6+0.8*hash3(sys*53+gi,week(),313)));
+  const q=Math.round((4+40*Math.exp(-dmin/5))*(0.6+0.8*hash3(sys*53+gi,week(),313))*(g.stockMul||1));
   const taken=S.bought[sys+'_'+gi+'_'+week()]||0;
   return Math.max(dmin<0.1?8:0,q)-taken;
 }
@@ -413,6 +431,7 @@ function yardStock(){
   if(S.loc===0)return SHIPS.map(function(x,i){return i;});
   const out=[];
   for(let i=0;i<SHIPS.length;i++)if(hash3(S.loc*13+i,week(),555)<0.32)out.push(i);
+  if(S.loc===24){var oi=SHIPS.findIndex(function(x){return x.id==='orion';});if(out.indexOf(oi)<0)out.push(oi);}
   return out;
 }
 function shipListPrice(i){return Math.round(SHIPS[i].price*(S.loc===0?1:0.85));}
@@ -516,6 +535,8 @@ function log(msg,cls){LOGBUF.unshift({d:S.day,m:msg,c:cls||''});if(LOGBUF.length
 function renderLog(){$('log').innerHTML=LOGBUF.map(function(e,i){
   return '<div class="'+(i===0?'new ':'')+(e.c||'')+'">['+dateStr(e.d)+'] '+e.m+'</div>';}).join('');}
 
+function coreVisited(){var c=0;for(var i=0;i<S.visited.length;i++)if(S.visited[i]<=22)c++;return c;}
+function frontierVisited(){var c=0;for(var i=0;i<S.visited.length;i++)if(S.visited[i]>22)c++;return c;}
 function statusHTML(){
   const m=shipMass(),nw=netWorth(),sh=ship();
   return '<span>&#128176; <b>'+fmt(S.cr)+'</b> cr</span>'+
@@ -523,7 +544,7 @@ function statusHTML(){
     '<span>&#128197; '+dateStr(S.day)+' <span class="dim">(day '+Math.round(S.day)+')</span></span>'+
     '<span>&#9875; mass <b>'+fmt(m)+'</b> <span class="dim">(hull '+sh.mass+' + cargo '+fmt(m-sh.mass)+(sh.cap?' / cap '+sh.cap:'')+')</span></span>'+
     '<span>&#127942; estate <b>'+fmt(nw)+'</b> <span class="dim">(started '+fmt(S.estate0||1960)+')</span></span>'+
-    '<span class="dim">systems '+S.visited.length+'/'+STARS.length+(S.visited.length===STARS.length&&S.loc!==0?' <span class="grn">\u2014 all visited! return to Sol</span>':'')+'</span>';
+    '<span class="dim">systems '+coreVisited()+'/23'+(frontierVisited()?' <span class="cyan">+'+frontierVisited()+' frontier</span>':'')+(coreVisited()===23&&S.loc!==0?' <span class="grn">\u2014 grand tour ready! return to Sol</span>':'')+'</span>';
 }
 
 /* ================= PORT SCREEN ================= */
@@ -540,7 +561,7 @@ function showPort(){
   renderMarket();renderManifest();renderLog();
   show('scr-port');
   saveGame();
-  if(!S.won&&S.loc===0&&S.visited.length===STARS.length)win();
+  if(!S.won&&S.loc===0&&coreVisited()===23)win();
 }
 function renderManifest(){
   const sh=ship();
@@ -589,12 +610,25 @@ function buy(gi,q){
   log('Bought '+q+' '+g.u+(q>1?'s':'')+' of '+g.n+' @ '+fmt(p)+' cr.');
   $('statusbar').innerHTML=statusHTML();renderMarket();renderManifest();
 }
+function marketDepth(sys,gi){
+  const g=GOODS[gi];
+  const dmin=Math.min.apply(null,g.src.map(function(s2){return lyDist(sys,s2);}));
+  const nat=Math.round((4+40*Math.exp(-dmin/5))*(0.6+0.8*hash3(sys*53+gi,week(),313)));
+  return Math.max(12,nat);
+}
+function sellRevenue(sys,gi,q){
+  const p=price(sys,gi),D=marketDepth(sys,gi);
+  if(q<=D)return {cr:p*q,avg:p,flooded:false,depth:D};
+  const cr=Math.round(p*(D*(1+Math.log(q/D))));
+  return {cr:cr,avg:cr/q,flooded:true,depth:D};
+}
 function sell(gi,q){
-  const g=GOODS[gi],p=price(S.loc,gi),have=S.cargo[g.id]||0;
+  const g=GOODS[gi],have=S.cargo[g.id]||0;
   q=Math.min(q,have);if(q<1)return;
-  S.cr+=q*p;S.cargo[g.id]=have-q;if(!S.cargo[g.id])delete S.cargo[g.id];
+  const r=sellRevenue(S.loc,gi,q);
+  S.cr+=r.cr;S.cargo[g.id]=have-q;if(!S.cargo[g.id])delete S.cargo[g.id];
   consumeLots(g,q);
-  log('Sold '+q+' '+g.u+(q>1?'s':'')+' of '+g.n+' @ '+fmt(p)+' cr.');
+  log('Sold '+q+' '+g.u+(q>1?'s':'')+' of '+g.n+' for '+fmt(r.cr)+' cr'+(r.flooded?' \u2014 bulk sale flooded the market past ~'+r.depth+', '+fmt(Math.round(r.avg))+' cr/'+g.u+' avg':' @ '+fmt(r.avg)+' cr each')+'.');
   $('statusbar').innerHTML=statusHTML();renderMarket();renderManifest();
 }
 
@@ -1268,7 +1302,7 @@ function win(){
   S.won=true;
   const worth=netWorth(),e0=S.estate0||1960,gain=worth-e0,weeks=Math.max(S.day/7,0.1),roi=(gain/e0/weeks*100);
   S.lastScore={gain:gain,roi:roi,worth:worth};
-  $('win-text').innerHTML='On <span class="gold">'+dateStr(S.day)+'</span> you return to <span class="gold">Sol</span> with every settled system\u2019s dust on your boots \u2014 all '+STARS.length+' ports in <span class="cyan">'+Math.round(S.day)+' days</span> ('+(S.day/365.25).toFixed(1)+' years), coming home in the '+esc(ship().n)+'.'+
+  $('win-text').innerHTML='On <span class="gold">'+dateStr(S.day)+'</span> you return to <span class="gold">Sol</span> with every settled system\u2019s dust on your boots \u2014 all 23 settled systems in <span class="cyan">'+Math.round(S.day)+' days</span> ('+(S.day/365.25).toFixed(1)+' years), coming home in the '+esc(ship().n)+'.'+
     '<br><br>Estate on departure: <span class="dim">'+fmt(e0)+' cr</span>'+
     '<br>Estate on return: <span class="gold">'+fmt(worth)+' cr</span>'+
     '<br>Gain: <span class="'+(gain>=0?'grn':'red')+'">'+fmt(gain)+' cr</span> over '+weeks.toFixed(1)+' weeks'+

@@ -1,6 +1,6 @@
 # INTERSTELLAR TRAIL — a trading game among the nearest stars
 
-**v1.8.2** — a single-file HTML game (formerly *In Space!*). Open `index.html` in any browser. Progress auto-saves to localStorage; the HALL OF THE GRAND TOUR is a shared online leaderboard (Supabase), with a localStorage fallback when offline.
+**v1.9.0** — a single-file HTML game (formerly *In Space!*). Open `index.html` in any browser. Progress auto-saves to localStorage; the HALL OF THE GRAND TOUR is a shared online leaderboard (Supabase), with a localStorage fallback when offline.
 
 Silk-Road-style trading loop transplanted to the 20 nearest star systems. The game opens
 January 1, **2202** (a small wink to TradeWars 2002). Start at Sol with 2,000 cr, a Taurean
@@ -118,6 +118,12 @@ Multiple rumors stay active at once (each until its own deadline), they're highl
 Rotatable 3D starmap (drag to rotate, scroll to zoom, click a highlighted system to depart).
 Drop-lines to the Sol plane and 4/8/12-ly reference rings give depth; active routes show
 travel time at your current mass. No external libraries — hand-rolled canvas projection.
+
+## The frontier stars (far, far out)
+Beyond the settled bubble sit six famous stars at real, punishing distances: Vega and Fomalhaut (~25 ly), Aldebaran (65 ly), then the deep-Orion run of Antares (554 ly), Betelgeuse (640 ly), and Rigel (848 ly, the farthest port on any chart). They hang off the network by a thin thread — the Orion chain runs DS9 → Aldebaran → Betelgeuse → Rigel — so reaching them means a long haul of legs or a reckless transwarp. They are **optional**: the Grand Tour still asks only for the 23 core systems; the frontier is for trade, exploration, and bragging rights. Each stocks a signature export in enormous quantity (Aldebaran whiskey, Rigel starsteel, Betelgeuse dredge-diamonds, Antares heart-garnets, Vega prism-optics, Fomalhaut ring-amber). Rigel's shipyard always has a T'Khasi Orion on the lot.
+
+## Flooding the market
+Selling is no longer linear. Each port only has so much appetite for a good at any one time (roughly what it normally stocks). Sell up to that depth and you get full price; dump a huge load beyond it and the per-unit price falls away on a diminishing curve. Load up 150 heavy ingots at Rigel and you'll find no single port can absorb them — you'll spread the sales, and the laden crawl home will feel every light-year.
 
 ## Shared scores (Supabase)
 The leaderboard rides on the same Supabase project as Silk Road, in its own `inspace_scores`
