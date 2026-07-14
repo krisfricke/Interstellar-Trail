@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.9.2';
+const VERSION='1.9.3';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -580,10 +580,10 @@ function renderMarket(){
      goods whose source is nearest (= lowest markup over the source price) */
   const carried=carriedGoods(S.loc);
   let h='<tr><th>good</th><th class="r">mass/unit</th><th class="r">price</th><th class="r">avg paid</th><th class="r">stock</th><th class="r">you hold</th><th class="c" colspan="2">trade</th></tr>';
-  /* "highest price around" compares only against neighbours within a plausible hop (<=100 ly):
+  /* "highest price around" compares only against neighbours within a plausible hop within the core radius (<=60 ly):
      an 848 ly frontier link no longer strips an inner hub's tag, and remote worlds whose nearest
      neighbour is hundreds of ly off simply show no tag instead of tagging everything */
-  const nearLinks=STARS[S.loc].links.filter(function(jj){return lyDist(S.loc,jj)<=100;});
+  const nearLinks=STARS[S.loc].links.filter(function(jj){return lyDist(S.loc,jj)<=60;});
   for(let i=0;i<GOODS.length;i++){
     const g=GOODS[i],p=price(S.loc,i),stk=stock(S.loc,i),have=S.cargo[g.id]||0;
     if((!carried[i]||stk<=0)&&!have)continue;
