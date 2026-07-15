@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.10.1';
+const VERSION='1.10.2';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -281,7 +281,7 @@ const STARS=[
 {id:27,n:'Antares',x:-191.03,y:-457.83,z:-246.6,d:554.0,sp:'M1.5Iab red supergiant',links:[25,26],col:'#ff6a5a',
  desc:'The red heart of the Scorpion, five hundred and fifty light-years down the southern reach \u2014 a supergiant so vast it would swallow the orbit of Mars whole. Deep in the gravity wells of its cinder-worlds the miners cut heart-garnets, blood-dark and enormous, sold by the coffer to anyone who made the long fall out here.'},
 {id:28,n:'Betelgeuse',x:13.37,y:634.52,z:82.51,d:640.0,sp:'M1-2Ia red supergiant',links:[23,24],col:'#ff7d5a',
- desc:'The doomed red shoulder of Orion, six hundred and forty light-years out \u2014 a supergiant that could go supernova any millennium now (it dimmed alarmingly in the 2010s, then thought better of it). Skimmers dredge crystallized carbon from the star\u2019s shed outer shells: dredge-diamonds, they call them, and they are worth the nightmare of getting home.'},
+ desc:'The doomed red shoulder of Orion, six hundred and forty light-years out \u2014 a supergiant that could go supernova any millennium now (it dimmed alarmingly in the 2010s, then thought better of it). Skimmers dredge crystallized carbon from the star\u2019s shed outer shells: dredge-diamonds, they call them, and they are worth the nightmare of getting home. The gift shops also do a brisk trade in Betelgeusian commemorative sporks \u2014 a joke that curdles the instant you try to sell the second one.'},
 {id:29,n:'GJ 1061',x:5.022,y:6.911,z:-8.399,d:11.98,sp:'M5.5V',links:[20,30,33],col:'#ff8866',
  desc:"A calm red dwarf just past Tau Ceti, with three rocky worlds in its temperate zone. Its very steadiness made it the bubble's chosen cradle for antimatter — the containment rings hang in the quiet dark where nothing ever flares."},
 {id:30,n:'YZ Ceti',x:11.015,y:3.606,z:-3.543,d:12.12,sp:'M4.5V flare',links:[20,29,31],col:'#ff9d76',
@@ -351,7 +351,8 @@ const GOODS=[
  {id:'deuterium',n:'SCR deuterium slush',   u:'canister',wt:4, base:60,  src:[35]},
  {id:'matcha',  n:'Turbo-matcha',             u:'tin',     wt:1, base:70,  src:[36]},
  {id:'cryolace',n:'DENIS cryo-lace',        u:'skein',   wt:1, base:200, src:[37]},
- {id:'kittenfelt',n:'Kitten-felt',            u:'bolt',    wt:2, base:120, src:[38]}
+ {id:'kittenfelt',n:'Kitten-felt',            u:'bolt',    wt:2, base:120, src:[38]},
+ {id:'spork',   n:'Betelgeusian commemorative sporks',u:'spork', wt:1, base:100, src:[28]}
 ];
 
 /* ================= PHYSICS =================
@@ -387,7 +388,7 @@ function peakC(d,days){return 2*d/(days/365.25);} /* peak speed in units of c = 
 /* ================= STATE ================= */
 let S=null;
 const START_DATE=Date.UTC(2202,0,1);
-function newState(){return {cr:200,loc:0,day:0,ship:'hilux',qship:false,heat:1,cargo:{},lots:{},visited:[0],rumors:[],bought:{},paid:{},won:false,navDest:null};}
+function newState(){return {cr:200,loc:0,day:0,ship:'hilux',qship:false,heat:1,cargo:{},lots:{},visited:[0],rumors:[],bought:{},paid:{},won:false,navDest:null,sporkSold:{}};}
 function dateStr(day){const d=new Date(START_DATE+day*86400000);
   return d.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'});}
 
@@ -413,6 +414,7 @@ function price(sys,gi){
   const grad=1+0.12*(g.wt-1)+(g.perish?0.8:0)+(g.halflife?0.8:0)+(g.contraband?0.8:0); /* heavier, perishable & contraband cargo gains value faster with distance — a risk/cost premium */
   let p=g.base*(0.7+0.02*grad*Math.min(dmin,200));
   p*=0.85+0.3*hash3(sys*37+gi,week(),911); /* weekly market wobble */
+  if(g.id==='spork')p*=Math.pow(0.5,(S.sporkSold&&S.sporkSold[sys])||0); /* commemorative demand halves per spork already sold here */
   var _rr=rumorAt(sys,gi);if(_rr)p*=_rr.mult;
   return Math.max(1,Math.round(p));
 }
@@ -662,7 +664,12 @@ function marketDepth(sys,gi){
   return Math.max(12,nat);
 }
 function sellRevenue(sys,gi,q){
-  const p=price(sys,gi),D=marketDepth(sys,gi);
+  const p=price(sys,gi);
+  if(GOODS[gi].id==='spork'){ /* each successive spork sold here fetches half the last: geometric sum */
+    const cr=Math.round(p*2*(1-Math.pow(0.5,q)));
+    return {cr:cr,avg:q?cr/q:p,spork:true,flooded:q>1,depth:1};
+  }
+  const D=marketDepth(sys,gi);
   if(q<=D)return {cr:p*q,avg:p,flooded:false,depth:D};
   const cr=Math.round(p*(D*(1+Math.log(q/D))));
   return {cr:cr,avg:cr/q,flooded:true,depth:D};
@@ -672,8 +679,10 @@ function sell(gi,q){
   q=Math.min(q,have);if(q<1)return;
   const r=sellRevenue(S.loc,gi,q);
   S.cr+=r.cr;S.cargo[g.id]=have-q;if(!S.cargo[g.id])delete S.cargo[g.id];
+  if(g.id==='spork'){S.sporkSold=S.sporkSold||{};S.sporkSold[S.loc]=(S.sporkSold[S.loc]||0)+q;}
   consumeLots(g,q);
-  log('Sold '+q+' '+g.u+(q>1?'s':'')+' of '+g.n+' for '+fmt(r.cr)+' cr'+(r.flooded?' \u2014 bulk sale flooded the market past ~'+r.depth+', '+fmt(Math.round(r.avg))+' cr/'+g.u+' avg':' @ '+fmt(r.avg)+' cr each')+'.');
+  var _note=r.spork?(q>1?' \u2014 the commemorative market sours fast; each spork fetched half the last':''):(r.flooded?' \u2014 bulk sale flooded the market past ~'+r.depth+', '+fmt(Math.round(r.avg))+' cr/'+g.u+' avg':' @ '+fmt(r.avg)+' cr each');
+  log('Sold '+q+' '+g.u+(q>1?'s':'')+' of '+g.n+' for '+fmt(r.cr)+' cr'+_note+'.');
   $('statusbar').innerHTML=statusHTML();renderMarket();renderManifest();
 }
 
@@ -1417,7 +1426,7 @@ function keepFlying(){showPort();}
 function saveGame(){try{localStorage.setItem('inspace_save',JSON.stringify({v:VERSION,S:S,log:LOGBUF}));}catch(e){}}
 function loadGame(){try{
   const d=JSON.parse(localStorage.getItem('inspace_save'));
-  if(d&&d.S){S=d.S;if(!S.paid)S.paid={};if(!S.ship)S.ship='hilux';if(!S.lots)S.lots={};if(!S.heat)S.heat=1;if(!S.estate0)S.estate0=4750;if(!S.rumors)S.rumors=S.rumor?[S.rumor]:[];LOGBUF=d.log||[];showPort();}
+  if(d&&d.S){S=d.S;if(!S.paid)S.paid={};if(!S.ship)S.ship='hilux';if(!S.lots)S.lots={};if(!S.heat)S.heat=1;if(!S.estate0)S.estate0=4750;if(!S.rumors)S.rumors=S.rumor?[S.rumor]:[];if(!S.sporkSold)S.sporkSold={};LOGBUF=d.log||[];showPort();}
 }catch(e){}}
 function newGame(){
   S=newState();S.estate0=netWorth();LOGBUF=[];

@@ -123,6 +123,8 @@ Beyond the settled bubble sit six famous stars at real, punishing distances: Veg
 ## Flooding the market
 Selling is no longer linear. Each port only has so much appetite for a good at any one time (roughly what it normally stocks). Sell up to that depth and you get full price; dump a huge load beyond it and the per-unit price falls away on a diminishing curve. Load up 150 heavy ingots at Rigel and you'll find no single port can absorb them — you'll spread the sales, and the laden crawl home will feel every light-year.
 
+**Betelgeusian commemorative sporks** (sold only at Betelgeuse) push this to its comic extreme — a novelty nobody wants two of. Each spork sold at a given system halves the price the next one there will fetch (417 → 209 → 104 → …), so dumping a whole crate anywhere nets barely twice a single sale. The play is to carry them out and leave exactly one commemorative spork at every port you pass.
+
 ## Shared scores (Supabase)
 The leaderboard rides on the same Supabase project as Silk Road, in its own `inspace_scores`
 table so the two boards never mix (Silk Road ranks by estate; Interstellar Trail by ROI/week).
