@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.10.7';
+const VERSION='1.10.8';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -635,7 +635,7 @@ function renderMarket(){
       :'<td class="r '+(p<avg*0.9?'grn':(p>avg*1.1?'cyan':'dim'))+'">'+fmt(avg)+'</td>'; /* green = price below your basis (buy), blue = above (sell) */
     const src=g.src.indexOf(S.loc)>=0;
     const topHere=cmpLinks.length>0&&cmpLinks.every(function(jj){return p>=price(jj,i);});
-    h+='<tr'+(have?' class="mine"':'')+'><td>'+esc(g.n)+(g.contraband?' <span class="contra">&#9888; contraband</span>':'')+(src?' <span class="cyan">&#9733; local</span>':'')+(topHere?' <span class="gold">&#9650; highest price around</span>':'')+(rumorAt(S.loc,i)?' <span class="grn">&#9670; anomalous demand until '+dateStr(rumorAt(S.loc,i).expires)+'</span>':'')+(g.perish?' <span class="dim">perishable &gt;'+g.perish.grace+'d</span>':'')+(g.halflife?' <span class="dim">half-life '+g.halflife+'d</span>':'')+(g.id==='spork'?' <span class="contra">&#9888; commemorative &mdash; each one sold here halves the next</span>':'')+'</td>'+
+    h+='<tr'+(have?' class="mine"':'')+'><td>'+esc(g.n)+(g.contraband?' <span class="contra">&#9888; contraband</span>':'')+(src?' <span class="cyan">&#9733; local</span>':'')+(topHere?' <span class="gold">&#9650; highest price around</span>':'')+(rumorAt(S.loc,i)?' <span class="grn">&#9670; anomalous demand until '+dateStr(rumorAt(S.loc,i).expires)+'</span>':'')+(g.perish?' <span class="dim">perishable &gt;'+g.perish.grace+'d</span>':'')+(g.halflife?' <span class="dim">half-life '+g.halflife+'d</span>':'')+'</td>'+
       '<td class="r dim">'+g.wt+'</td><td class="r gold">'+fmt(p)+'</td>'+avgCell+'<td class="r dim">'+Math.max(0,stk)+'</td><td class="r">'+(have||'&mdash;')+'</td>'+
       '<td class="c"><span class="qty"><button onclick="buy('+i+',1)" '+(stk<1||S.cr<p?'disabled':'')+'>buy</button>'+
       '<button onclick="buy('+i+',5)" '+(stk<5||S.cr<p*5?'disabled':'')+'>+5</button>'+
@@ -674,9 +674,22 @@ function sellRevenue(sys,gi,q){
   const cr=Math.round(p*(D*(1+Math.log(q/D))));
   return {cr:cr,avg:cr/q,flooded:true,depth:D};
 }
-function sell(gi,q){
+function sell(gi,q,confirmed){
   const g=GOODS[gi],have=S.cargo[g.id]||0;
   q=Math.min(q,have);if(q<1)return;
+  if(g.id==='spork'&&!confirmed){
+    const sold=(S.sporkSold&&S.sporkSold[S.loc])||0;
+    if(sold+q>1){
+      const choices=[];
+      if(sold===0&&q>1)choices.push({t:'Sell just one (full price)',primary:true,f:function(){sell(gi,1,true);}});
+      choices.push({t:'Sell '+(q>1?'all '+q:'it')+' anyway',f:function(){sell(gi,q,true);}});
+      choices.push({t:'Keep '+(q>1?'them':'it'),f:function(){}});
+      modal('A MATTER OF RARITY',
+        'The whole worth of a Betelgeusian commemorative spork is that almost nobody has one. '+(sold>0?'This market has already taken one off your hands, and ':'')+'any further spork sold in the <em>same</em> market fetches <span class="red">substantially less</span> than the last \u2014 the buyers here will pay a premium only for the novelty of the first.',
+        choices);
+      return;
+    }
+  }
   const r=sellRevenue(S.loc,gi,q);
   S.cr+=r.cr;S.cargo[g.id]=have-q;if(!S.cargo[g.id])delete S.cargo[g.id];
   if(g.id==='spork'){S.sporkSold=S.sporkSold||{};S.sporkSold[S.loc]=(S.sporkSold[S.loc]||0)+q;}
