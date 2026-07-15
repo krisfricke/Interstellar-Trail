@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.9.8';
+const VERSION='1.9.9';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -907,7 +907,7 @@ function depart(dest,off){
   const d=lyDist(S.loc,dest),m=shipMass(),days=travelDays(d,m,ship().thr);
   const plan=makePlan(d,m,ship().thr);
   T={from:S.loc,to:dest,d:d,m:m,curA:plan.a,plan:plan,prog:0,t0:performance.now(),
-     dur:days*800, /* 0.8s per travel day, uncapped */events:planEvents(days),paused:false,starseed:Math.random()*1e6|0};
+     dur:days*800, /* 0.8s per travel day, uncapped */events:planEvents(days,!!off),paused:false,starseed:Math.random()*1e6|0};
   T.off=!!off;
   if(off&&Math.random()>off.surv){
     T.events.push({at:0.25+Math.random()*0.5,kind:'misjump'});
@@ -920,18 +920,18 @@ function depart(dest,off){
   c.width=r.width*devicePixelRatio;c.height=r.height*devicePixelRatio;
   requestAnimationFrame(transitFrame);
 }
-function planEvents(days){
-  /* longer trips risk more; 0-2 events at random fractions of the trip */
+function planEvents(days,off){
+  /* longer trips risk more; 0-2 events at random fractions of the trip. off = transwarp: pirates don't lurk in the uncharted deep */
   const ev=[];
-  if(Math.random()<Math.min(0.8,(days/16)*(1+((S.heat||1)-1)*0.3)))ev.push({at:0.15+Math.random()*0.55,kind:pickEvent()});
-  if(Math.random()<Math.min(0.35,days/40))ev.push({at:0.15+Math.random()*0.65,kind:pickEvent()});
+  if(Math.random()<Math.min(0.8,(days/16)*(1+((S.heat||1)-1)*0.3)))ev.push({at:0.15+Math.random()*0.55,kind:pickEvent(off)});
+  if(Math.random()<Math.min(0.35,days/40))ev.push({at:0.15+Math.random()*0.65,kind:pickEvent(off)});
   if(ship().special==='fragile'&&Math.random()<Math.min(0.35,days/18))ev.push({at:0.15+Math.random()*0.65,kind:'malfunction'}); /* the Orion's thoroughbred drive */
   ev.sort(function(a,b){return a.at-b.at;});
   return ev;
 }
-function pickEvent(){
-  /* pirate share scales with your reputation as a soft mark (S.heat, base 1) */
-  const pw=0.30*(S.heat||1),tot=pw+0.70;
+function pickEvent(noPirates){
+  /* pirate share scales with your reputation as a soft mark (S.heat, base 1); none on a transwarp run */
+  const pw=noPirates?0:0.30*(S.heat||1),tot=pw+0.70;
   let r=Math.random()*tot;
   if(r<pw)return 'pirates';r-=pw;
   if(r<0.12)return 'malfunction';
