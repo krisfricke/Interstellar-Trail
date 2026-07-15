@@ -2,12 +2,11 @@
 
 **v1.9.0** — a single-file HTML game (formerly *In Space!*). Open `index.html` in any browser. Progress auto-saves to localStorage; the HALL OF THE GRAND TOUR is a shared online leaderboard (Supabase), with a localStorage fallback when offline.
 
-Silk-Road-style trading loop transplanted to the 20 nearest star systems. The game opens
+Silk-Road-style trading loop transplanted to the nearest ~38 star systems (the 20 nearest, plus the next 10, plus Vulcan, DS9 and six famous far-flung stars). The game opens
 January 1, **2202** (a small wink to TradeWars 2002). Start at Sol with 2,000 cr, a Taurean
 Mule, and an empty (but bottomless) hold.
 
-**The goal is the Grand Tour**: set foot in every settled system (all 23, Vulcan and DS9
-included), then return to Sol. Your place in the HALL OF THE GRAND TOUR is ranked by estate
+**The goal is the Grand Tour**: set foot in any twenty systems, then return to Sol. Your place in the HALL OF THE GRAND TOUR is ranked by estate
 gained per week — (estate on return − starting estate of 4,750 cr) ÷ weeks elapsed, where
 estate = credits + hull trade-in value + cargo at local prices. A fast lean run can beat a
 slow rich one. The HALL OF THE GRAND TOUR is shared across all players (top 50, via Supabase),
@@ -53,10 +52,8 @@ trade-ins. Net worth includes your hull's local trade-in value.
 ## Piracy is a reputation game
 Escape odds are physics: the nav computer rates your chances by your CURRENT thrust-to-mass
 (cargo, hull, even mid-trip drive damage all count) — 55% for an empty Mule, ~10% at 1,000
-total mass, capped at 95%. And pirates keep books: every ransom you pay raises your "soft
-mark" heat (×1.35, up to 3× base frequency); a clean escape works it back down (never below
-base); a kill — Intergalactic Galliot point-defense (90%) or the Q-Ship Package's concealed
-batteries (67% to obliterate) — drops it BELOW base, to a floor of 0.3×. The Q-Ship Package
+total mass, capped at 95%. And pirates keep books: the pirates keep books, with no caps either way. Every ransom you pay — or boarding you
+suffer — nudges your "soft mark" heat up 10%; every corsair you kill or drive off (Intergalactic Galliot point-defense at 90%, or the Q-Ship Package's concealed batteries at 67% to obliterate) knocks it down 10%; a clean escape drifts it 10% back toward baseline. Over a career a relentless pirate-killer fades to a ghost few will bother, while a serial victim becomes a marked target hunted at every turn. The Q-Ship Package
 (7,500 cr at Sol, select used lots elsewhere) adds 100 hull mass — the hidden guns cost you
 real speed — and goes with the hull when you trade or lose it. Cornered and laden, you can
 also JETTISON half the cargo (rounded up, per good) and run on the post-dump math: the modal
@@ -92,7 +89,7 @@ spectacular prices back in the bubble.
 ## The route network (per spec)
 From each system you can fly to: the next system *further* from Sol, the next system *nearer*
 to Sol, and its own *nearest spatial neighbour* — deduplicated and made symmetric. The result
-is a connected 21-node, 31-edge web; junctions like Ross 248 and 61 Cygni get 4 routes.
+extends, by the same rule, into a ~38-node web out to the frontier stars; the busiest junctions carry five routes. Antimatter, once an Earth product, is now refined out at quiet GJ 1061.
 
 ## The economy
 29 sci-fi goods, each with a source system — from featherweight relics (1 mass) up to Groombridge deep-cycle batteries at a spine-crushing 10 mass per rack (Tau Ceti grain, Sirian degenerate-matter ingots,

@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.9.9';
+const VERSION='1.10.0';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -230,7 +230,7 @@ const STARS=[
  desc:'Triple system and first colony. The computronium foundries orbit Rigil Kentaurus; down on Proxima b they ferment a pale wine from engineered lichen on the twilight ring — Proxima b keeps one face forever to its star.'},
 {id:2,n:"Barnard's Star",x:-0.058,y:-5.94,z:0.488,d:5.96,sp:'M4V',links:[0,1,3,9],col:'#ff9d76',
  desc:'A fast-moving red dwarf and a sky full of comets. Barnard b is a frozen super-Earth; the ice miners core ancient cometary volatiles here and sell them by the tonne, cheap.'},
-{id:3,n:'Luhman 16',x:-3.711,y:1.182,z:-5.229,d:6.52,sp:'L7.5 + T0.5 brown dwarfs',links:[0,1,2,4],col:'#c96f4a',
+{id:3,n:'Luhman 16',x:-3.711,y:1.182,z:-5.229,d:6.52,sp:'L7.5 + T0.5 brown dwarfs',links:[0,1,2,4,37],col:'#c96f4a',
  desc:'Twin brown dwarfs, failed stars glowing dull ember-red. Skimmer platforms ride the silicate clouds and compress metallic hydrogen for the drive trade. Rough crews, good bars.'},
 {id:4,n:'WISE 0855-0714',x:-5.102,y:5.32,z:-0.935,d:7.43,sp:'Y2 — coldest known',links:[0,3,5,7],col:'#8a5a8f',
  desc:'The coldest known almost-star: water-ice clouds on a thing five times the mass of Jupiter. In the cryo-stills they condense cloud-pearls — perfect spheres of exotic ice that never melt in transit.'},
@@ -244,11 +244,11 @@ const STARS=[
  desc:'UV Ceti and its twin: the flare stars that named the class. A hard-scrabble waystation system — everything here is imported, marked up, and slightly scorched.'},
 {id:9,n:'Ross 154',x:1.915,y:-8.673,z:-3.924,d:9.71,sp:'M3.5V',links:[2,8,10],col:'#ff9d76',
  desc:'A lonely red dwarf toward Sagittarius, last stop before the long hauls. Fuel depots, bonded warehouses, and a customs office that has seen everything.'},
-{id:10,n:'Ross 248',x:7.357,y:-0.581,z:7.171,d:10.29,sp:'M5.5V',links:[9,11,15,18],col:'#ff8866',
+{id:10,n:'Ross 248',x:7.357,y:-0.581,z:7.171,d:10.29,sp:'M5.5V',links:[9,11,15,18,36],col:'#ff8866',
  desc:'In some thirty-six thousand years this star will pass within about three light-years of Sol \u2014 nearer than Proxima sits today \u2014 and briefly be the closest star of all; the locals have already printed the commemorative plates. Crossroads system — four routes meet here.'},
-{id:11,n:'Epsilon Eridani',x:6.17,y:8.258,z:-1.717,d:10.45,sp:'K2V',links:[8,10,12,21],col:'#ffd9a0',
+{id:11,n:'Epsilon Eridani',x:6.17,y:8.258,z:-1.717,d:10.45,sp:'K2V',links:[8,10,12,21,32],col:'#ffd9a0',
  desc:'A young orange sun wrapped in a magnificent debris disk. The belt miners strip-mine planetesimals that never got to be planets. Ore is cheap; everything else is falling toward you.'},
-{id:12,n:'Lacaille 9352',x:8.448,y:-2.033,z:-6.279,d:10.72,sp:'M0.5V',links:[11,13,14,26],col:'#ffab7a',
+{id:12,n:'Lacaille 9352',x:8.448,y:-2.033,z:-6.279,d:10.72,sp:'M0.5V',links:[11,13,14,26,34],col:'#ffab7a',
  desc:'GJ 887: the quietest red dwarf known, with two confirmed super-Earths. Under calm skies the hydroponic terraces grow a saffron-like spice found nowhere else.'},
 {id:13,n:'Ross 128',x:-10.993,y:0.588,z:0.154,d:11.01,sp:'M4V',links:[5,12,14],col:'#ff9d76',
  desc:'Ross 128 b was the first temperate world found around a quiet red dwarf, and the saffron terraced there since the 2120s is now the finest in the bubble. Serene, prosperous, smug about it.'},
@@ -256,7 +256,7 @@ const STARS=[
  desc:'A knotted triple of red dwarfs. In the strange triple daylight the weavers spin gossamer fabric in freefall — trinary silk is the luxury cloth of the age.'},
 {id:15,n:'61 Cygni',x:6.473,y:-6.095,z:7.135,d:11.4,sp:'K5V + K7V',links:[10,14,16,17,25],col:'#ffcf95',
  desc:'The first star ever to have its distance measured, and proud of it. The great orbital foundries here roll habitat alloy for every station in the bubble. Four routes meet at the yards.'},
-{id:16,n:'Procyon',x:-4.791,y:10.358,z:1.044,d:11.46,sp:'F5IV + DQZ white dwarf',links:[15,17,19],col:'#eef2ff',
+{id:16,n:'Procyon',x:-4.791,y:10.358,z:1.044,d:11.46,sp:'F5IV + DQZ white dwarf',links:[15,17,19,31],col:'#eef2ff',
  desc:'A bright subgiant already swelling toward its end, and a white dwarf that got there first. The universities and biolabs of Procyon Station print pharmaceuticals licensed to half the settled worlds.'},
 {id:17,n:'Struve 2398',x:1.081,y:-5.724,z:9.938,d:11.52,sp:'M3V + M3.5V',links:[15,16,18,25],col:'#ff9d76',
  desc:'A binary of dim red dwarfs high above the Sol plane. Monasteries, long-baseline observatories, and very little small talk.'},
@@ -264,9 +264,9 @@ const STARS=[
  desc:'GX Andromedae and companion, with a clutch of small planets. The isotope works here pellet fusion fuel for the entire northern reach. Smells faintly of ozone everywhere.'},
 {id:19,n:'DX Cancri',x:-6.341,y:8.278,z:5.262,d:11.68,sp:'M6.5V',links:[16,18,20],col:'#ff8866',
  desc:'A nearly invisible ember of a star — and the place where the diggers found the Relics. Nobody knows who left them. Trading them is banned in every port and profitable in most.'},
-{id:20,n:'Tau Ceti',x:10.153,y:4.957,z:-3.226,d:11.75,sp:'G8V',links:[8,19],col:'#ffedb8',
+{id:20,n:'Tau Ceti',x:10.153,y:4.957,z:-3.226,d:11.75,sp:'G8V',links:[8,19,29,30],col:'#ffedb8',
  desc:'The other yellow sun, with four candidate worlds and the only open-sky farmland outside Sol. The grain barges leave loaded and come back light. End of the line — for now, if you keep to the charts.'},
-{id:21,n:'40 Eridani (Vulcan)',x:7.145,y:14.533,z:-2.176,d:16.34,sp:'K0.5V + DA + M4.5',links:[11,22,23],col:'#ffd9a0',
+{id:21,n:'40 Eridani (Vulcan)',x:7.145,y:14.533,z:-2.176,d:16.34,sp:'K0.5V + DA + M4.5',links:[11,22,23,38],col:'#ffd9a0',
  desc:'A triple system out past the charted bubble: a calm orange sun, a white dwarf, a red dwarf — and in the habitable zone, the hot desert world every human insists on calling Vulcan. The locals are courteously resigned to it. Precision instruments from the academy workshops and the pale, bracing tea of the high deserts are prized in every port of the bubble.'},
 {id:22,n:'Deep Space 9',x:18.59,y:48.428,z:-3.627,d:52.0,sp:'station — Denorios Belt',links:[21,23,24,26],col:'#b9a7e8',
  desc:'A Cardassian-built station of improbable silhouette, keeping loose position where the charts swear a stable wormhole sleeps. Nobody will state its fix to better than a light-hour, but the heading is known, the distance is fifty-two light-years, and Quark\u2019s never closes.'},
@@ -281,7 +281,27 @@ const STARS=[
 {id:27,n:'Antares',x:-191.03,y:-457.83,z:-246.6,d:554.0,sp:'M1.5Iab red supergiant',links:[25,26],col:'#ff6a5a',
  desc:'The red heart of the Scorpion, five hundred and fifty light-years down the southern reach \u2014 a supergiant so vast it would swallow the orbit of Mars whole. Deep in the gravity wells of its cinder-worlds the miners cut heart-garnets, blood-dark and enormous, sold by the coffer to anyone who made the long fall out here.'},
 {id:28,n:'Betelgeuse',x:13.37,y:634.52,z:82.51,d:640.0,sp:'M1-2Ia red supergiant',links:[23,24],col:'#ff7d5a',
- desc:'The doomed red shoulder of Orion, six hundred and forty light-years out \u2014 a supergiant that could go supernova any millennium now (it dimmed alarmingly in the 2010s, then thought better of it). Skimmers dredge crystallized carbon from the star\u2019s shed outer shells: dredge-diamonds, they call them, and they are worth the nightmare of getting home.'}
+ desc:'The doomed red shoulder of Orion, six hundred and forty light-years out \u2014 a supergiant that could go supernova any millennium now (it dimmed alarmingly in the 2010s, then thought better of it). Skimmers dredge crystallized carbon from the star\u2019s shed outer shells: dredge-diamonds, they call them, and they are worth the nightmare of getting home.'},
+{id:29,n:'GJ 1061',x:5.022,y:6.911,z:-8.399,d:11.98,sp:'M5.5V',links:[20,30,33],col:'#ff8866',
+ desc:"A calm red dwarf just past Tau Ceti, with three rocky worlds in its temperate zone. Its very steadiness made it the bubble's chosen cradle for antimatter — the containment rings hang in the quiet dark where nothing ever flares."},
+{id:30,n:'YZ Ceti',x:11.015,y:3.606,z:-3.543,d:12.12,sp:'M4.5V flare',links:[20,29,31],col:'#ff9d76',
+ desc:"A vicious little flare star with three planets crowded impossibly close. In the whipsaw of its magnetic storms the fabricators grow flux-crystals that hold a charge like nothing coaxed out of a calm sun."},
+{id:31,n:"Luyten's Star",x:-4.578,y:11.415,z:1.125,d:12.35,sp:'M3.5V',links:[16,30,32,38],col:'#ffab7a',
+ desc:"A red dwarf warming Luyten b, a temperate ocean world under a permanent red dusk. The tide-farms harvest a tough, faintly luminous kelp and weave it into cool kelp-silk."},
+{id:32,n:"Teegarden's Star",x:8.712,y:8.196,z:3.63,d:12.5,sp:'M6.5V',links:[11,31,33],col:'#c96f4a',
+ desc:"One of the oldest and coolest stars known — a dim ember already ancient when the Sun was young. Its glassworks anneal slow-glass, which drinks starlight for years and lets it back out, so a fresh pane still shows a decade-old sky."},
+{id:33,n:"Kapteyn's Star",x:1.898,y:8.868,z:-9.075,d:12.83,sp:'M1.5VI halo',links:[29,32,34],col:'#ffd9a0',
+ desc:"A halo star on a great retrograde plunge through the disk, a refugee from a dwarf galaxy the Milky Way swallowed billions of years ago. Its mines cut halo-iron — metal older than the Sun, and stranger."},
+{id:34,n:'Lacaille 8760',x:7.646,y:-6.573,z:-8.126,d:12.95,sp:'M0V',links:[12,33,35],col:'#ffab7a',
+ desc:"The brightest red dwarf in any sky, a restless flare star at the charts' edge. Under its unusual glare the kilns anneal bright-glass, prized for optics and cheap by the pane."},
+{id:35,n:'SCR 1845-6357',x:1.121,y:-5.622,z:-11.735,d:13.06,sp:'M8.5V + T6',links:[34,36],col:'#a06a8f',
+ desc:"A dim red dwarf shackled to a frigid brown-dwarf companion — barely a system at all. Skimmers work the T-dwarf's cloud decks for deuterium slush: heavy, cheap, and the fuel of choice on the long hauls."},
+{id:36,n:'Kruger 60',x:6.429,y:-2.729,z:11.047,d:13.07,sp:'M3V + M4V',links:[10,35,37],col:'#ff9d76',
+ desc:"A close binary of red dwarfs, one a flare star, whirling about each other within a human lifetime. In the doubled glare the pans flash-crystallize sharp, strange arc-salts."},
+{id:37,n:'DENIS J1048-3956',x:-9.622,y:3.115,z:-8.467,d:13.19,sp:'M8.5V',links:[3,36,38],col:'#8a5a8f',
+ desc:"A lone ultra-cool dwarf, scarcely a star, adrift in the deep. In its frozen sub-stellar depths the artisans freeze cryo-lace — filigree that can form nowhere warmer."},
+{id:38,n:'Ross 614',x:-1.707,y:13.234,z:-0.656,d:13.36,sp:'M4.5V + M5.5V',links:[21,31,37],col:'#ff8866',
+ desc:"A binary of flaring red dwarfs down toward Orion's feet. The twins bleed a fragrant amber-like resin from their debris belts; twin-resin sells sweet in every port that can't grow its own trees."}
 ];
 
 /* ================= GOODS =================
@@ -291,7 +311,7 @@ const GOODS=[
  {id:'coffee', n:'Coffee',                u:'crate',  wt:2, base:40,  src:[0]},
  {id:'whiskey',n:'Single-malt whiskey',   u:'cask',   wt:3, base:95,  src:[0]},
  {id:'seeds',  n:'Terraforming seed vault',u:'vault', wt:4, base:120, src:[0]},
- {id:'anti',   n:'Antimatter cells',      u:'cell',   wt:1, base:300, src:[0]},
+ {id:'anti',   n:'Antimatter cells',      u:'cell',   wt:1, base:300, src:[29]},
  {id:'media',  n:'Vintage Earth media',   u:'archive',wt:1, base:25,  src:[0]},
  {id:'compu',  n:'Centauri computronium', u:'wafer',  wt:1, base:260, src:[1]},
  {id:'wine',   n:'Proxima lichen wine',   u:'flask',  wt:2, base:70,  src:[1]},
@@ -322,7 +342,16 @@ const GOODS=[
  {id:'bdiamond',n:'Betelgeuse dredge-diamonds',u:'case',wt:2,base:430, src:[28], stockMul:4},
  {id:'garnet',  n:'Antares heart-garnets',u:'coffer', wt:3, base:340, src:[27], stockMul:4},
  {id:'optics',  n:'Vega prism-optics',    u:'crate',  wt:2, base:150, src:[25]},
- {id:'ramber',  n:'Fomalhaut ring-amber', u:'string', wt:1, base:150, src:[26]}
+ {id:'ramber',  n:'Fomalhaut ring-amber', u:'string', wt:1, base:150, src:[26]},
+ {id:'flux',    n:'YZ Ceti flux-crystals',  u:'shard',   wt:1, base:170, src:[30]},
+ {id:'kelpsilk',n:'Luyten kelp-silk',       u:'bolt',    wt:2, base:85,  src:[31]},
+ {id:'slowglass',n:'Teegarden slow-glass',  u:'pane',    wt:2, base:220, src:[32]},
+ {id:'haloiron',n:'Kapteyn halo-iron',      u:'ingot',   wt:6, base:190, src:[33]},
+ {id:'brightglass',n:'Lacaille bright-glass',u:'pane',   wt:1, base:75,  src:[34]},
+ {id:'deuterium',n:'SCR deuterium slush',   u:'canister',wt:4, base:60,  src:[35]},
+ {id:'arcsalt', n:'Kruger arc-salts',       u:'crate',   wt:3, base:95,  src:[36]},
+ {id:'cryolace',n:'DENIS cryo-lace',        u:'skein',   wt:1, base:200, src:[37]},
+ {id:'twinresin',n:'Ross 614 twin-resin',   u:'cask',    wt:3, base:110, src:[38]}
 ];
 
 /* ================= PHYSICS =================
@@ -555,7 +584,7 @@ function statusHTML(){
     '<span>&#128197; '+dateStr(S.day)+' <span class="dim">(day '+Math.round(S.day)+')</span></span>'+
     '<span>&#9875; mass <b>'+fmt(m)+'</b> <span class="dim">(hull '+sh.mass+' + cargo '+fmt(m-sh.mass)+(sh.cap?' / cap '+sh.cap:'')+')</span></span>'+
     '<span>&#127942; estate <b>'+fmt(nw)+'</b> <span class="dim">(started '+fmt(S.estate0||1960)+')</span></span>'+
-    '<span class="dim">systems '+coreVisited()+'/23'+(frontierVisited()?' <span class="cyan">+'+frontierVisited()+' frontier</span>':'')+(coreVisited()===23&&S.loc!==0?' <span class="grn">\u2014 grand tour ready! return to Sol</span>':'')+'</span>';
+    '<span class="dim">systems '+S.visited.length+'/'+STARS.length+(S.visited.length>=20?(S.loc!==0?' <span class="grn">\u2014 grand tour ready! return to Sol</span>':''):' <span class="dim">('+(20-S.visited.length)+' more for the Grand Tour)</span>')+'</span>';
 }
 
 /* ================= PORT SCREEN ================= */
@@ -572,7 +601,7 @@ function showPort(){
   renderMarket();renderManifest();renderLog();
   show('scr-port');
   saveGame();
-  if(!S.won&&S.loc===0&&coreVisited()===23)win();
+  if(!S.won&&S.loc===0&&S.visited.length>=20)win();
 }
 function renderManifest(){
   const sh=ship();
@@ -1072,14 +1101,14 @@ function fireEvent(kind){
   if(kind==='pirates'){
     /* the Q-ship's concealed batteries get first say */
     if(S.qship&&Math.random()<0.67){
-      S.heat=Math.max(0.3,(S.heat||1)*0.6);
+      S.heat=(S.heat||1)*0.9;
       modal('PIRATES \u2014 SURPRISE',
         'The corsair closes on what its scopes call a fat, underpowered trader. Blast shutters drop, the Q-ship package runs out its hidden batteries, and fires exactly once. The expanding cloud astern used to be a pirate. Word of this will get around.',
         [{t:'Reload and carry on',f:function(){log('Pirate obliterated by the Q-ship batteries.');resumeTransit();}}]);
       return;
     }
     if(ship().special==='galliot'&&Math.random()<0.9){
-      S.heat=Math.max(0.3,(S.heat||1)*0.6);
+      S.heat=(S.heat||1)*0.9;
       modal('PIRATES \u2014 BRIEFLY',
         'A corsair begins its intercept run; the Galliot\u2019s point-defense grid paints it with a hundred firing solutions and one polite warning shot. The pirate reconsiders at speed. Word of this will get around.',
         [{t:'Carry on',f:function(){log('Pirates repelled by the Galliot\u2019s defenses.');resumeTransit();}}]);
@@ -1096,11 +1125,12 @@ function fireEvent(kind){
     const pJet=dumpMass>0?escOdds(T.curA*mNow/(mNow-dumpMass)):pEsc;
     function runOutcome(p){
       if(Math.random()<p){
-        S.heat=Math.max(1,(S.heat||1)*0.6);
+        S.heat=(S.heat||1)+(1-(S.heat||1))*0.1;
         log('Outran the pirates. The corsair dwindles astern.');
         modal('CLEAN GETAWAY','You redline the drive and the corsair falls away astern, cursing on an open channel.',[{t:'Onward',f:resumeTransit}]);
       }else{
         if(Math.random()<0.25){destroyShip('They catch you at the flip, and this crew does not rob \u2014 a torpedo blooms against the drive section');return;}
+        S.heat=(S.heat||1)*1.1; /* boarded: you're a proven soft mark now */
         const cv=cargoValueList();let lost='nothing of value';
         if(cv.length){const pick=cv[Math.floor(Math.random()*cv.length)];
           const g=GOODS[pick[0]],q=Math.max(1,Math.round(pick[1]*0.6));
@@ -1115,7 +1145,7 @@ function fireEvent(kind){
     }
     const choices=[
       {t:'Pay the ransom ('+fmt(ransom)+' cr)',f:function(){
-        S.cr-=ransom;S.heat=Math.min(3,(S.heat||1)*1.35);
+        S.cr-=ransom;S.heat=(S.heat||1)*1.1;
         log('Paid pirates a ransom of '+fmt(ransom)+' cr. Word gets around about soft marks.');resumeTransit();}}
     ];
     if(dumpMass>0)choices.push({t:'Jettison half the cargo & run ('+Math.round(pJet*100)+'%)',f:function(){
@@ -1318,7 +1348,7 @@ function win(){
   S.won=true;
   const worth=netWorth(),e0=S.estate0||1960,gain=worth-e0,weeks=Math.max(S.day/7,0.1),roi=(gain/e0/weeks*100);
   S.lastScore={gain:gain,roi:roi,worth:worth};
-  $('win-text').innerHTML='On <span class="gold">'+dateStr(S.day)+'</span> you return to <span class="gold">Sol</span> with every settled system\u2019s dust on your boots \u2014 all 23 settled systems in <span class="cyan">'+Math.round(S.day)+' days</span> ('+(S.day/365.25).toFixed(1)+' years), coming home in the '+esc(ship().n)+'.'+
+  $('win-text').innerHTML='On <span class="gold">'+dateStr(S.day)+'</span> you return to <span class="gold">Sol</span> with the dust of twenty far worlds on your boots \u2014 the Grand Tour in <span class="cyan">'+Math.round(S.day)+' days</span> ('+(S.day/365.25).toFixed(1)+' years), coming home in the '+esc(ship().n)+'.'+
     '<br><br>Estate on departure: <span class="dim">'+fmt(e0)+' cr</span>'+
     '<br>Estate on return: <span class="gold">'+fmt(worth)+' cr</span>'+
     '<br>Gain: <span class="'+(gain>=0?'grn':'red')+'">'+fmt(gain)+' cr</span> over '+weeks.toFixed(1)+' weeks'+
