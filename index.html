@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.10.3';
+const VERSION='1.10.4';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -246,7 +246,7 @@ const STARS=[
  desc:'A lonely red dwarf toward Sagittarius, last stop before the long hauls. Fuel depots, bonded warehouses, and a customs office that has seen everything.'},
 {id:10,n:'Ross 248',x:7.357,y:-0.581,z:7.171,d:10.29,sp:'M5.5V',links:[9,11,15,18,36],col:'#ff8866',
  desc:'In some thirty-six thousand years this star will pass within about three light-years of Sol \u2014 nearer than Proxima sits today \u2014 and briefly be the closest star of all; the locals have already printed the commemorative plates. Crossroads system — four routes meet here.'},
-{id:11,n:'Epsilon Eridani',x:6.17,y:8.258,z:-1.717,d:10.45,sp:'K2V',links:[8,10,12,21,32],col:'#ffd9a0',
+{id:11,n:'Epsilon Eridani',x:6.17,y:8.258,z:-1.717,d:10.45,sp:'K2V',links:[8,10,12,21,32,33],col:'#ffd9a0',
  desc:'A young orange sun wrapped in a magnificent debris disk. The belt miners strip-mine planetesimals that never got to be planets. Ore is cheap; everything else is falling toward you.'},
 {id:12,n:'Lacaille 9352',x:8.448,y:-2.033,z:-6.279,d:10.72,sp:'M0.5V',links:[11,13,14,26,34],col:'#ffab7a',
  desc:'GJ 887: the quietest red dwarf known, with two confirmed super-Earths. Under calm skies the hydroponic terraces grow a saffron-like spice found nowhere else.'},
@@ -290,7 +290,7 @@ const STARS=[
  desc:"A red dwarf warming Luyten b, a temperate ocean world under a permanent red dusk. Its warm shallows teem with nearly-sentient jellyfish — luminous, faintly telepathic, and worth a fortune to aquaria and philosophers alike."},
 {id:32,n:"Teegarden's Star",x:8.712,y:8.196,z:3.63,d:12.5,sp:'M6.5V',links:[11,31,33],col:'#c96f4a',
  desc:"One of the oldest and coolest stars known — a dim ember already ancient when the Sun was young. Its glassworks anneal slow-glass, which drinks starlight for years and lets it back out, so a fresh pane still shows a decade-old sky."},
-{id:33,n:"Kapteyn's Star",x:1.898,y:8.868,z:-9.075,d:12.83,sp:'M1.5VI halo',links:[29,32,34],col:'#ffd9a0',
+{id:33,n:"Kapteyn's Star",x:1.898,y:8.868,z:-9.075,d:12.83,sp:'M1.5VI halo',links:[11,29,32,34],col:'#ffd9a0',
  desc:"A halo star on a great retrograde plunge through the disk, a refugee from a dwarf galaxy the Milky Way swallowed billions of years ago. Its mines cut halo-iron — metal older than the Sun, and stranger."},
 {id:34,n:'Lacaille 8760',x:7.646,y:-6.573,z:-8.126,d:12.95,sp:'M0V',links:[12,33,35],col:'#ffab7a',
  desc:"The brightest red dwarf in any sky, its inner world a blazing spice-desert of cinnamon dunes. Under that hard light the sandcrews harvest melange — the spice — hauled off-world by anyone who can endure the heat."},
@@ -945,7 +945,7 @@ function depart(dest,off){
   const d=lyDist(S.loc,dest),m=shipMass(),days=travelDays(d,m,ship().thr);
   const plan=makePlan(d,m,ship().thr);
   T={from:S.loc,to:dest,d:d,m:m,curA:plan.a,plan:plan,prog:0,t0:performance.now(),
-     dur:days*800, /* 0.8s per travel day, uncapped */events:planEvents(days,!!off),paused:false,starseed:Math.random()*1e6|0};
+     dur:days*800, /* 0.8s per travel day, uncapped */events:planEvents(days,!!off,S.loc,dest),paused:false,starseed:Math.random()*1e6|0};
   T.off=!!off;
   if(off&&Math.random()>off.surv){
     T.events.push({at:0.25+Math.random()*0.5,kind:'misjump'});
@@ -958,12 +958,13 @@ function depart(dest,off){
   c.width=r.width*devicePixelRatio;c.height=r.height*devicePixelRatio;
   requestAnimationFrame(transitFrame);
 }
-function planEvents(days,off){
+function planEvents(days,off,from,to){
   /* longer trips risk more; 0-2 events at random fractions of the trip. off = transwarp: pirates don't lurk in the uncharted deep */
   const ev=[];
   if(Math.random()<Math.min(0.8,(days/16)*(1+((S.heat||1)-1)*0.3)))ev.push({at:0.15+Math.random()*0.55,kind:pickEvent(off)});
   if(Math.random()<Math.min(0.35,days/40))ev.push({at:0.15+Math.random()*0.65,kind:pickEvent(off)});
   if(ship().special==='fragile'&&Math.random()<Math.min(0.35,days/18))ev.push({at:0.15+Math.random()*0.65,kind:'malfunction'}); /* the Orion's thoroughbred drive */
+  if((from===33&&to===32)||(from===32&&to===33))ev.push({at:from===33?0.591:0.409,kind:'epseri'}); /* the Kapteyn<->Teegarden line threads within ~0.36 ly of Epsilon Eridani */
   ev.sort(function(a,b){return a.at-b.at;});
   return ev;
 }
@@ -1215,6 +1216,10 @@ function fireEvent(kind){
             log('Salvaged '+q+' '+g.u+(q>1?'s':'')+' of '+g.n+' from a derelict'+(over?' — the extra mass forced an overshoot of '+over.toFixed(2)+' ly':'')+'.');resumeTransit();}},
          {t:'Leave it',f:function(){log('Passed a derelict by.');resumeTransit();}}]);
     }
+  }else if(kind==='epseri'){
+    modal('CLOSE PASS \u2014 EPSILON ERIDANI',
+      'Mid-burn the nav plot flags a star riding almost dead on the track: this leg threads within about <span class="gold">0.36 ly</span> of <span class="gold">Epsilon Eridani</span> \u2014 close enough, on interstellar terms, to all but graze its cometary halo. The young orange K-dwarf glares off the hull and its dust rings smear the starfield for a moment before the deep swallows it again. A pretty coincidence of the charts, and nothing more.',
+      [{t:'Onward',primary:true,f:function(){log('Coasted within ~0.36 ly of Epsilon Eridani on the Kapteyn\u2013Teegarden leg.');resumeTransit();}}]);
   }else{ /* rumor */
     const dests=STARS[T.to].links.filter(function(j){return j!==T.from;});
     const sys=dests.length?dests[Math.floor(Math.random()*dests.length)]:T.to;

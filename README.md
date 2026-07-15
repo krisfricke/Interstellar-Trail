@@ -89,7 +89,7 @@ spectacular prices back in the bubble.
 ## The route network (per spec)
 From each system you can fly to: the next system *further* from Sol, the next system *nearer*
 to Sol, and its own *nearest spatial neighbour* — deduplicated and made symmetric. The result
-extends, by the same rule, into a ~38-node web out to the frontier stars; the busiest junctions carry five routes. Antimatter, once an Earth product, is now refined out at quiet GJ 1061.
+extends, by the same rule, into a ~38-node web out to the frontier stars; the busiest junctions carry six routes (Epsilon Eridani is the hub). Antimatter, once an Earth product, is now refined out at quiet GJ 1061.
 
 ## The economy
 29 sci-fi goods, each with a source system — from featherweight relics (1 mass) up to Groombridge deep-cycle batteries at a spine-crushing 10 mass per rack (Tau Ceti grain, Sirian degenerate-matter ingots,
@@ -108,7 +108,7 @@ beats every directly connected neighbor — the signal to stop hauling and start
 Pirates (pay or run), drive faults (+15–35% trip time), smooth vacuum (early arrival),
 derelict salvage (credits or cargo — taking cargo slows the rest of the run), trader gossip
 (a real, time-limited price spike at a nearby system — now the most common non-pirate event,
-so tips flow often), and customs inspections on arrival if you're carrying relics.
+so tips flow often), and customs inspections on arrival if you're carrying relics. One route has a wink of real astronomy: the Kapteyn's Star ↔ Teegarden's Star line passes within ~0.36 ly of Epsilon Eridani, and you get a flavor note as you coast past (no mechanical effect). Kapteyn now also links directly to Epsilon Eridani.
 
 Multiple rumors stay active at once (each until its own deadline), they're highlighted in the log, and a **RUMORS** menu at port lists every live tip with your best-known source, leg-jump vs. transwarp travel times, and one-click course plotting.
 
