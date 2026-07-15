@@ -96,7 +96,7 @@ is a connected 21-node, 31-edge web; junctions like Ross 248 and 61 Cygni get 4 
 
 ## The economy
 29 sci-fi goods, each with a source system — from featherweight relics (1 mass) up to Groombridge deep-cycle batteries at a spine-crushing 10 mass per rack (Tau Ceti grain, Sirian degenerate-matter ingots,
-DX Cancri alien relics — contraband, watch for customs). Price radiates out from each good's source: base × (0.7 + 0.02 × grad × ly-from-source, ly capped at 200) × a
+DX Cancri alien relics — contraband, watch for customs). Price radiates out from each good's source **along the navigable trade links** (network distance, not straight-line): base × (0.7 + 0.02 × grad × route-ly-from-source, capped at 200) × a
 weekly deterministic wobble, where grad rises with weight, perishability, and contraband risk — so heavy, spoilable, and smuggled cargo climbs
 in value faster with distance (a risk/cost premium), while ordinary goods barely change between neighbours. Stock is deep near the source and thin far away.
 Heavy cheap goods vs. light valuables is the core tension, since cargo mass slows the ship.

@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.9.7';
+const VERSION='1.9.8';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -224,15 +224,15 @@ const VERSION='1.9.7';
    further from Sol, the next system nearer to Sol, and its own nearest
    spatial neighbour (deduplicated, symmetric).                         */
 const STARS=[
-{id:0,n:'Sol',x:0,y:0,z:0,d:0,sp:'G2V',links:[1],col:'#fff3b0',
+{id:0,n:'Sol',x:0,y:0,z:0,d:0,sp:'G2V',links:[1,2,3,4],col:'#fff3b0',
  desc:'Home. Old Earth still grows the coffee, distills the whiskey, and prints the vaccines the whole bubble runs on. The Kuiper shipyards will sell you anything — at Kuiper prices.'},
 {id:1,n:'Alpha Centauri',x:-1.634,y:-1.366,z:-3.816,d:4.37,sp:'G2V + K1V + M5.5',links:[0,2,3],col:'#ffe9a8',
  desc:'Triple system and first colony. The computronium foundries orbit Rigil Kentaurus; down on Proxima b they ferment a pale wine from engineered lichen on the twilight ring — Proxima b keeps one face forever to its star.'},
-{id:2,n:"Barnard's Star",x:-0.058,y:-5.94,z:0.488,d:5.96,sp:'M4V',links:[1,3,9],col:'#ff9d76',
+{id:2,n:"Barnard's Star",x:-0.058,y:-5.94,z:0.488,d:5.96,sp:'M4V',links:[0,1,3,9],col:'#ff9d76',
  desc:'A fast-moving red dwarf and a sky full of comets. Barnard b is a frozen super-Earth; the ice miners core ancient cometary volatiles here and sell them by the tonne, cheap.'},
-{id:3,n:'Luhman 16',x:-3.711,y:1.182,z:-5.229,d:6.52,sp:'L7.5 + T0.5 brown dwarfs',links:[1,2,4],col:'#c96f4a',
+{id:3,n:'Luhman 16',x:-3.711,y:1.182,z:-5.229,d:6.52,sp:'L7.5 + T0.5 brown dwarfs',links:[0,1,2,4],col:'#c96f4a',
  desc:'Twin brown dwarfs, failed stars glowing dull ember-red. Skimmer platforms ride the silicate clouds and compress metallic hydrogen for the drive trade. Rough crews, good bars.'},
-{id:4,n:'WISE 0855-0714',x:-5.102,y:5.32,z:-0.935,d:7.43,sp:'Y2 — coldest known',links:[3,5,7],col:'#8a5a8f',
+{id:4,n:'WISE 0855-0714',x:-5.102,y:5.32,z:-0.935,d:7.43,sp:'Y2 — coldest known',links:[0,3,5,7],col:'#8a5a8f',
  desc:'The coldest known almost-star: water-ice clouds on a thing five times the mass of Jupiter. In the cryo-stills they condense cloud-pearls — perfect spheres of exotic ice that never melt in transit.'},
 {id:5,n:'Wolf 359',x:-7.503,y:2.135,z:0.96,d:7.86,sp:'M6V flare star',links:[4,6,13],col:'#ff8866',
  desc:'A vicious little flare star. Every superflare fuses the regolith of its inner rock into flare-glass, iridescent and radiation-scarred. The glassblowers’ guild lives underground and does not come up for weather.'},
@@ -368,9 +368,19 @@ function hash3(a,b,c){let h=2166136261;for(const v of[a,b,c]){h^=v;h=Math.imul(h
 function week(){return Math.floor(S.day/7);}
 function rumorAt(sys,gi){if(!S.rumors)return null;for(var i=0;i<S.rumors.length;i++){var r=S.rumors[i];if(r.sys===sys&&r.good===gi&&S.day<=r.expires)return r;}return null;}
 function activeRumors(){return (S.rumors||[]).filter(function(r){return S.day<=r.expires;});}
+/* price radiates outward along the navigable trade links (network distance), not straight-line ly */
+let _NET=null;
+function buildNet(){
+  const n=STARS.length,INF=1e9,D=[];
+  for(let i=0;i<n;i++){D[i]=new Array(n).fill(INF);D[i][i]=0;}
+  for(const st of STARS)for(const j of st.links){const d=lyDist(st.id,j);if(d<D[st.id][j]){D[st.id][j]=d;D[j][st.id]=d;}}
+  for(let k=0;k<n;k++)for(let i=0;i<n;i++){const dik=D[i][k];if(dik>=INF)continue;for(let j=0;j<n;j++)if(dik+D[k][j]<D[i][j])D[i][j]=dik+D[k][j];}
+  _NET=D;
+}
+function netDist(a,b){if(!_NET)buildNet();return _NET[a][b];}
 function price(sys,gi){
   const g=GOODS[gi];
-  const dmin=Math.min.apply(null,g.src.map(function(s){return lyDist(sys,s);}));
+  const dmin=Math.min.apply(null,g.src.map(function(s){return netDist(sys,s);}));
   const grad=1+0.12*(g.wt-1)+(g.perish?0.8:0)+(g.halflife?0.8:0)+(g.contraband?0.8:0); /* heavier, perishable & contraband cargo gains value faster with distance — a risk/cost premium */
   let p=g.base*(0.7+0.02*grad*Math.min(dmin,200));
   p*=0.85+0.3*hash3(sys*37+gi,week(),911); /* weekly market wobble */
@@ -1365,8 +1375,8 @@ function recordScore(){
 function scoresTable(limit){
   const sc=loadScores().slice(0,limit||10);
   if(!sc.length)return '';
-  let h='<table style="max-width:660px;margin:0 auto"><tr><th>#</th><th>captain</th><th class="r">%ROI/wk</th><th class="r">gain</th><th class="r">days</th><th>ship</th><th>returned</th></tr>';
-  sc.forEach(function(x,i){h+='<tr><td class="dim">'+(i+1)+'</td><td>'+esc(x.n)+'</td><td class="r gold">'+(typeof x.roi==='number'?x.roi.toFixed(1)+'%':'\u2014')+'</td><td class="r">'+fmt(x.gain)+'</td><td class="r dim">'+x.days+'</td><td class="dim">'+esc(x.ship)+'</td><td class="dim">'+esc(x.when||'')+'</td></tr>';});
+  let h='<table style="max-width:660px;margin:0 auto"><tr><th>#</th><th>captain</th><th class="r">%ROI/wk</th><th class="r">gain</th><th class="r">days</th><th>ship</th><th>returned</th><th>ver</th></tr>';
+  sc.forEach(function(x,i){h+='<tr><td class="dim">'+(i+1)+'</td><td>'+esc(x.n)+'</td><td class="r gold">'+(typeof x.roi==='number'?x.roi.toFixed(1)+'%':'\u2014')+'</td><td class="r">'+fmt(x.gain)+'</td><td class="r dim">'+x.days+'</td><td class="dim">'+esc(x.ship)+'</td><td class="dim">'+esc(x.when||'')+'</td><td class="dim">'+esc(x.version||'\u2014')+'</td></tr>';});
   return h+'</table>';
 }
 function renderScores(){
