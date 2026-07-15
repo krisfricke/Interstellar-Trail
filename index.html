@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.9.3';
+const VERSION='1.9.4';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -584,6 +584,7 @@ function renderMarket(){
      an 848 ly frontier link no longer strips an inner hub's tag, and remote worlds whose nearest
      neighbour is hundreds of ly off simply show no tag instead of tagging everything */
   const nearLinks=STARS[S.loc].links.filter(function(jj){return lyDist(S.loc,jj)<=60;});
+  const cmpLinks=nearLinks.length?nearLinks:STARS[S.loc].links; /* a far world with nothing inside the core radius compares against all its links instead of none */
   for(let i=0;i<GOODS.length;i++){
     const g=GOODS[i],p=price(S.loc,i),stk=stock(S.loc,i),have=S.cargo[g.id]||0;
     if((!carried[i]||stk<=0)&&!have)continue;
@@ -591,7 +592,7 @@ function renderMarket(){
     const avgCell=avg===null?'<td class="r dim">&mdash;</td>'
       :'<td class="r '+(p<avg*0.9?'grn':(p>avg*1.1?'cyan':'dim'))+'">'+fmt(avg)+'</td>'; /* green = price below your basis (buy), blue = above (sell) */
     const src=g.src.indexOf(S.loc)>=0;
-    const topHere=nearLinks.length>0&&nearLinks.every(function(jj){return p>=price(jj,i);});
+    const topHere=cmpLinks.length>0&&cmpLinks.every(function(jj){return p>=price(jj,i);});
     h+='<tr'+(have?' class="mine"':'')+'><td>'+esc(g.n)+(g.contraband?' <span class="contra">&#9888; contraband</span>':'')+(src?' <span class="cyan">&#9733; local</span>':'')+(topHere?' <span class="gold">&#9650; highest price around</span>':'')+(rumorAt(S.loc,i)?' <span class="grn">&#9670; anomalous demand until '+dateStr(rumorAt(S.loc,i).expires)+'</span>':'')+(g.perish?' <span class="dim">perishable &gt;'+g.perish.grace+'d</span>':'')+(g.halflife?' <span class="dim">half-life '+g.halflife+'d</span>':'')+'</td>'+
       '<td class="r dim">'+g.wt+'</td><td class="r gold">'+fmt(p)+'</td>'+avgCell+'<td class="r dim">'+Math.max(0,stk)+'</td><td class="r">'+(have||'&mdash;')+'</td>'+
       '<td class="c"><span class="qty"><button onclick="buy('+i+',1)" '+(stk<1||S.cr<p?'disabled':'')+'>buy</button>'+
