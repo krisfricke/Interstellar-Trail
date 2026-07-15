@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.10.0';
+const VERSION='1.10.1';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -285,23 +285,23 @@ const STARS=[
 {id:29,n:'GJ 1061',x:5.022,y:6.911,z:-8.399,d:11.98,sp:'M5.5V',links:[20,30,33],col:'#ff8866',
  desc:"A calm red dwarf just past Tau Ceti, with three rocky worlds in its temperate zone. Its very steadiness made it the bubble's chosen cradle for antimatter — the containment rings hang in the quiet dark where nothing ever flares."},
 {id:30,n:'YZ Ceti',x:11.015,y:3.606,z:-3.543,d:12.12,sp:'M4.5V flare',links:[20,29,31],col:'#ff9d76',
- desc:"A vicious little flare star with three planets crowded impossibly close. In the whipsaw of its magnetic storms the fabricators grow flux-crystals that hold a charge like nothing coaxed out of a calm sun."},
+ desc:"A vicious little flare star with three planets crowded impossibly close. In the whipsaw of its magnetic storms the refiners grow dilithium crystals — the strange lattice that lets a warp-thrust drive bite spacetime at all."},
 {id:31,n:"Luyten's Star",x:-4.578,y:11.415,z:1.125,d:12.35,sp:'M3.5V',links:[16,30,32,38],col:'#ffab7a',
- desc:"A red dwarf warming Luyten b, a temperate ocean world under a permanent red dusk. The tide-farms harvest a tough, faintly luminous kelp and weave it into cool kelp-silk."},
+ desc:"A red dwarf warming Luyten b, a temperate ocean world under a permanent red dusk. Its warm shallows teem with nearly-sentient jellyfish — luminous, faintly telepathic, and worth a fortune to aquaria and philosophers alike."},
 {id:32,n:"Teegarden's Star",x:8.712,y:8.196,z:3.63,d:12.5,sp:'M6.5V',links:[11,31,33],col:'#c96f4a',
  desc:"One of the oldest and coolest stars known — a dim ember already ancient when the Sun was young. Its glassworks anneal slow-glass, which drinks starlight for years and lets it back out, so a fresh pane still shows a decade-old sky."},
 {id:33,n:"Kapteyn's Star",x:1.898,y:8.868,z:-9.075,d:12.83,sp:'M1.5VI halo',links:[29,32,34],col:'#ffd9a0',
  desc:"A halo star on a great retrograde plunge through the disk, a refugee from a dwarf galaxy the Milky Way swallowed billions of years ago. Its mines cut halo-iron — metal older than the Sun, and stranger."},
 {id:34,n:'Lacaille 8760',x:7.646,y:-6.573,z:-8.126,d:12.95,sp:'M0V',links:[12,33,35],col:'#ffab7a',
- desc:"The brightest red dwarf in any sky, a restless flare star at the charts' edge. Under its unusual glare the kilns anneal bright-glass, prized for optics and cheap by the pane."},
+ desc:"The brightest red dwarf in any sky, its inner world a blazing spice-desert of cinnamon dunes. Under that hard light the sandcrews harvest melange — the spice — hauled off-world by anyone who can endure the heat."},
 {id:35,n:'SCR 1845-6357',x:1.121,y:-5.622,z:-11.735,d:13.06,sp:'M8.5V + T6',links:[34,36],col:'#a06a8f',
  desc:"A dim red dwarf shackled to a frigid brown-dwarf companion — barely a system at all. Skimmers work the T-dwarf's cloud decks for deuterium slush: heavy, cheap, and the fuel of choice on the long hauls."},
 {id:36,n:'Kruger 60',x:6.429,y:-2.729,z:11.047,d:13.07,sp:'M3V + M4V',links:[10,35,37],col:'#ff9d76',
- desc:"A close binary of red dwarfs, one a flare star, whirling about each other within a human lifetime. In the doubled glare the pans flash-crystallize sharp, strange arc-salts."},
+ desc:"A close binary of red dwarfs whirling about each other within a human lifetime. On the terraces between the twin suns they grow turbo-matcha — a double-photosynthesised tea so fierce a single bowl is rumoured to skip a night’s sleep."},
 {id:37,n:'DENIS J1048-3956',x:-9.622,y:3.115,z:-8.467,d:13.19,sp:'M8.5V',links:[3,36,38],col:'#8a5a8f',
  desc:"A lone ultra-cool dwarf, scarcely a star, adrift in the deep. In its frozen sub-stellar depths the artisans freeze cryo-lace — filigree that can form nowhere warmer."},
 {id:38,n:'Ross 614',x:-1.707,y:13.234,z:-0.656,d:13.36,sp:'M4.5V + M5.5V',links:[21,31,37],col:'#ff8866',
- desc:"A binary of flaring red dwarfs down toward Orion's feet. The twins bleed a fragrant amber-like resin from their debris belts; twin-resin sells sweet in every port that can't grow its own trees."}
+ desc:"A binary of flaring red dwarfs down toward Orion’s feet. Its mills spin kitten-felt, a synthetic pelt softer than any animal’s — and, the labels are always careful to note, no kitten was ever harmed in the making."}
 ];
 
 /* ================= GOODS =================
@@ -343,15 +343,15 @@ const GOODS=[
  {id:'garnet',  n:'Antares heart-garnets',u:'coffer', wt:3, base:340, src:[27], stockMul:4},
  {id:'optics',  n:'Vega prism-optics',    u:'crate',  wt:2, base:150, src:[25]},
  {id:'ramber',  n:'Fomalhaut ring-amber', u:'string', wt:1, base:150, src:[26]},
- {id:'flux',    n:'YZ Ceti flux-crystals',  u:'shard',   wt:1, base:170, src:[30]},
- {id:'kelpsilk',n:'Luyten kelp-silk',       u:'bolt',    wt:2, base:85,  src:[31]},
+ {id:'dilithium',n:'Dilithium crystals',      u:'crystal', wt:1, base:280, src:[30]},
+ {id:'jelly',   n:'Nearly-sentient jellyfish',u:'tank',   wt:3, base:160, src:[31]},
  {id:'slowglass',n:'Teegarden slow-glass',  u:'pane',    wt:2, base:220, src:[32]},
  {id:'haloiron',n:'Kapteyn halo-iron',      u:'ingot',   wt:6, base:190, src:[33]},
- {id:'brightglass',n:'Lacaille bright-glass',u:'pane',   wt:1, base:75,  src:[34]},
+ {id:'melange', n:'Spice melange',            u:'pouch',   wt:1, base:260, src:[34]},
  {id:'deuterium',n:'SCR deuterium slush',   u:'canister',wt:4, base:60,  src:[35]},
- {id:'arcsalt', n:'Kruger arc-salts',       u:'crate',   wt:3, base:95,  src:[36]},
+ {id:'matcha',  n:'Turbo-matcha',             u:'tin',     wt:1, base:70,  src:[36]},
  {id:'cryolace',n:'DENIS cryo-lace',        u:'skein',   wt:1, base:200, src:[37]},
- {id:'twinresin',n:'Ross 614 twin-resin',   u:'cask',    wt:3, base:110, src:[38]}
+ {id:'kittenfelt',n:'Kitten-felt',            u:'bolt',    wt:2, base:120, src:[38]}
 ];
 
 /* ================= PHYSICS =================
