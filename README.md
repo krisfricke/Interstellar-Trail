@@ -44,7 +44,7 @@ derived, not guessed: you are buying power-to-weight, and at 4x a Mule's it cost
 Mule's price = 20,000 cr — landing it beside the Bactrian Hauler, the very ship that
 out-hauls it past 800 cargo. Its thoroughbred drive still breaks down ~35% of trips (vs
 ~12% baseline), and a fault on the deceleration leg means an overshoot; the Argo Class Exploration Vessel (75/75) matches a Mule empty and halves off-route danger; the SSFI
-Intergalactic Galliot (150/140) repels 90% of pirate trouble with point-defense. The Escape Pod (10/5)
+Intergalactic Galliot (150/115) repels 90% of pirate trouble with point-defense. The Escape Pod (10/5)
 has half a Mule's power-to-weight and is where you end up when things go wrong.
 The shipyard is its own screen, reached by a button from port. Sol's yard stocks every hull at list price but pays a stingy 55% for trade-ins; every
 other port runs a used lot with a random weekly selection at 85% of list, paying 75% on
