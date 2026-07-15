@@ -146,7 +146,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
   <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <select id="navdest-sel" onchange="selectNavDest()" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);padding:6px 10px;font-family:inherit;font-size:13px;border-radius:3px"><option value="">— PLOT COURSE TO… —</option></select>
     <span id="navplan-info"></span>
-    <button id="navplan-go" style="display:none;border-color:var(--cyan);color:var(--cyan)" onclick="confirmNavPlan()">SET FIRST LEG →</button>
+    <button id="navplan-go" style="display:none;border-color:var(--cyan);color:var(--cyan)" onclick="confirmNavPlan()">ENGAGE</button>
     <button id="navplan-clear" style="display:none" onclick="clearNavPlan()">CLEAR COURSE</button>
   </div>
   <div class="panel" id="offroute"></div>
@@ -215,7 +215,7 @@ button.blue:hover:not(:disabled){background:#0e2a3a;border-color:var(--cyan);col
 
 <script>
 'use strict';
-const VERSION='1.10.4';
+const VERSION='1.10.5';
 
 /* ================= STAR DATA =================
    Real J2000 positions of the 20 nearest star systems, in light-years,
@@ -700,18 +700,18 @@ function showSetout(){
     return '<button onclick="depart('+j+')"'+(isNavHop?' style="border-color:var(--cyan)"':'')+'><span class="tn"'+(isNavHop?' style="color:var(--cyan)"':'')+'>'+esc(STARS[j].n)+(vis?' \u2713':'')+(isNavHop?' <span style="font-size:.8em">(next leg)</span>':'')+'</span><br>'+
       '<span class="tt">'+d.toFixed(2)+' ly &middot; '+t.toFixed(1)+' days at mass '+fmt(m)+' &middot; peak '+fmt(peakC(d,t))+'c</span></button>';
   }).join('')+'<button onclick="toggleTranswarp()"><span class="tn">TRANSWARP\u2026</span><br><span class="tt">off the charted lanes \u2014 anywhere you can name, at your peril</span></button>';
-  const others=STARS.map(function(st){return st.id;}).filter(function(j){return j!==S.loc&&STARS[S.loc].links.indexOf(j)<0;});
+  const others=STARS.map(function(st){return st.id;}).filter(function(j){return j!==S.loc&&STARS[S.loc].links.indexOf(j)<0;}).sort(function(a,b){return STARS[a].d-STARS[b].d;});
   $('offroute').innerHTML='<h3>TRANSWARP \u2014 OFF THE CHARTS</h3>'+
     '<div class="dim" style="font-size:.85em;line-height:1.5">No beacons, no lane data \u2014 point the nose anywhere and pray. Risk compounds per hub skipped: 20% each, 10% if you\u2019ve set foot there before'+(ship().special==='argo'?' \u2014 <span class="cyan">halved by the Argo\u2019s survey suite</span>':'')+'. Lose the roll and the ship is debris; you ride the escape pod the rest of the way.</div>'+
     '<div style="margin-top:8px"><select id="offsel" onchange="syncNavFromTw()">'+others.map(function(j){
       const o=offRouteOdds(j),d=lyDist(S.loc,j),t=travelDays(d,shipMass(),ship().thr);
       return '<option value="'+j+'" style="color:'+(S.visited.indexOf(j)>=0?'var(--grn)':'var(--red)')+'">'+ esc(STARS[j].n)+' \u2014 '+d.toFixed(1)+' ly, '+t.toFixed(1)+'d \u2014 skips '+o.hubs+' hub'+(o.hubs>1?'s':'')+' \u2014 '+Math.round(o.surv*100)+'% survival</option>';
-    }).join('')+'</select> <button class="danger" onclick="departOff()">ENGAGE RECKLESSLY</button></div>';
+    }).join('')+'</select> <button class="danger" onclick="departOff()">ENGAGE RECKLESSLY</button> <button onclick="closeTranswarp()">CLEAR COURSE</button></div>';
   /* populate nav planner dropdown */
   const navSel=$('navdest-sel');
   const prevNavVal=navSel.value;
   navSel.innerHTML='<option value="">— PLOT COURSE TO… —</option>'+
-    STARS.filter(function(st){return st.id!==S.loc;}).map(function(st){
+    STARS.filter(function(st){return st.id!==S.loc;}).sort(function(a,b){return a.d-b.d;}).map(function(st){
       const vis=S.visited.indexOf(st.id)>=0;
       return '<option value="'+st.id+'" style="color:'+(vis?'var(--grn)':'var(--red)')+'">'+esc(st.n)+(vis?' ✓':'')+'</option>';
     }).join('');
@@ -926,6 +926,10 @@ function toggleTranswarp(){
   const el=$('offroute');
   el.style.display=el.style.display==='none'?'':'none';
   if(el.style.display!=='none')twPreselect();
+  drawMap();
+}
+function closeTranswarp(){ /* dismiss the transwarp calc; the map falls back to any multi-leg plotted course */
+  $('offroute').style.display='none';
   drawMap();
 }
 function twPreselect(){
